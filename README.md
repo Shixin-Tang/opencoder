@@ -74,7 +74,6 @@ OpenCoder has a cross-platform shell that supports Windows, Linux, and MacOS. Po
 - [ ] Add auto-import MCP tools from `vscode/mcp.json` or `cursorrules/mcp.json`
 - [ ] Add more examples
 - [ ] Prebuilt MCP tools (`import { playwright } from "opencoder/mcp"`)
-- [ ] Tools confirmation dialog
 - [ ] Proper release process (changeset + changelog)
 - [ ] Add more tests
 
