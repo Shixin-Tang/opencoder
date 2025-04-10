@@ -23,21 +23,16 @@ export const metadata = {
 export const tool = defineTool({
   description: `This is a tool for editing files. For moving or renaming files, you should generally use the Bash tool with the 'mv' command instead. For larger edits, use the Write tool to overwrite files.
 
-Before using this tool:
-
-1. Use the View tool to understand the file's contents and context
-
-
 To make a file edit, provide the following:
-1. file_path: The absolute path to the file to modify (must be absolute, not relative)
-2. old_string: The text to replace (must be unique within the file, and must match the file contents exactly, including all whitespace and indentation)
-3. new_string: The edited text to replace the old_string
+1. filePath: The absolute path to the file to modify (must be absolute, not relative)
+2. oldString: The text to replace (must be unique within the file, and must match the file contents exactly, including all whitespace and indentation)
+3. newString: The edited text to replace the oldString
 
-The tool will replace ONE occurrence of old_string with new_string in the specified file.
+The tool will replace ONE occurrence of oldString with newString in the specified file.
 
 CRITICAL REQUIREMENTS FOR USING THIS TOOL:
 
-1. UNIQUENESS: The old_string MUST uniquely identify the specific instance you want to change. This means:
+1. UNIQUENESS: The oldString MUST uniquely identify the specific instance you want to change. This means:
    - Include AT LEAST 3-5 lines of context BEFORE the change point
    - Include AT LEAST 3-5 lines of context AFTER the change point
    - Include all whitespace, indentation, and surrounding code exactly as it appears in the file
@@ -52,8 +47,8 @@ CRITICAL REQUIREMENTS FOR USING THIS TOOL:
    - Plan separate tool calls for each instance
 
 WARNING: If you do not follow these requirements:
-   - The tool will fail if old_string matches multiple locations
-   - The tool will fail if old_string doesn't match exactly (including whitespace)
+   - The tool will fail if oldString matches multiple locations
+   - The tool will fail if oldString doesn't match exactly (including whitespace)
    - You may change the wrong instance if you don't include enough context
 
 When making edits:
@@ -63,8 +58,8 @@ When making edits:
 
 If you want to create a new file, use:
    - A new file path, including dir name if needed
-   - An empty old_string
-   - The new file's contents as new_string
+   - An empty oldString
+   - The new file's contents as newString
 
 Remember: when making multiple file edits in a row to the same file, you should prefer to send all edits in a single message with multiple calls to this tool, rather than multiple messages with a single call each.`,
   parameters: z.strictObject({

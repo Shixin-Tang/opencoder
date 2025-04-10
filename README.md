@@ -60,8 +60,6 @@ OpenCoder has a cross-platform shell that supports Windows, Linux, and MacOS. Po
 - Read file
 - Write file
 - Edit file
-- Memory read
-- Memory write
 - Think
 - Planning
 - Grep: powered by @vscode/ripgrep
@@ -69,6 +67,7 @@ OpenCoder has a cross-platform shell that supports Windows, Linux, and MacOS. Po
 ## Roadmap
 
 - [ ] Tool confirmation dialog
+- [ ] More commands (/checkpoint, /revert, /commit, /mcp, /cost)
 - [ ] Documentation
 - [ ] Add MCP support
 - [ ] Add auto-import MCP tools from `vscode/mcp.json` or `cursorrules/mcp.json`
