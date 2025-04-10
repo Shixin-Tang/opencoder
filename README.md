@@ -67,6 +67,7 @@ OpenCoder has a cross-platform shell that supports Windows, Linux, and MacOS. Po
 ## Roadmap
 
 - [ ] Tool confirmation dialog
+- [ ] Support custom tools
 - [ ] More commands (/checkpoint, /revert, /commit, /mcp, /cost)
 - [ ] Documentation
 - [ ] Add MCP support
