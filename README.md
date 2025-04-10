@@ -17,7 +17,7 @@ npx opencoder@next
 
 ## Overview
 
-- Complete Claude Code replacement
+- Complete Claude Code replacement with similar UI and UX
 - Built on top of the Vercel AI SDK. Fully compatible with the AI SDK model.
 - Supports any LLM providers that the AI SDK supports (OpenAI, Anthropic, Google, etc.)
 - Cross-platform shell: which means supports Windows, Linux, and MacOS.

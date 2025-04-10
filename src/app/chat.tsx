@@ -219,7 +219,7 @@ export function Chat() {
         }, 10)
       }
     })
-  }, [last5Messages, messages])
+  }, [messages])
 
   return (
     <Box flexDirection="column" gap={0}>
