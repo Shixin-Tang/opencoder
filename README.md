@@ -25,6 +25,8 @@ npx opencoder@next
 
 ## Demo
 
+#### Youtube clone
+
 ## Features
 
 #### 1. Built on top of the Vercel AI SDK
