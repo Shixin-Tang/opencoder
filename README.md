@@ -26,6 +26,9 @@ npx opencoder@next
 ## Demo
 
 #### Youtube clone
+https://github.com/user-attachments/assets/67c52f00-7c54-404d-b1e2-244312f0094a
+
+
 
 ## Features
 
