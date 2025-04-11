@@ -7,6 +7,7 @@ import fsLiteDriver from "unstorage/drivers/fs-lite"
 export { anthropic, createAnthropic } from "@ai-sdk/anthropic"
 export { createGoogleGenerativeAI, google } from "@ai-sdk/google"
 export { createOpenAI, openai } from "@ai-sdk/openai"
+export { z } from "zod"
 
 const cacheDir = await globalCacheDir("OpenCoder")
 export const storage = createStorage({
@@ -16,6 +17,7 @@ export const storage = createStorage({
 export type Config = {
   model?: LanguageModel
   mcp?: Promise<Record<string, Tool>>[]
+  customTools?: Record<string, Tool<any, any>>
   experimental?: {
     /**
      * glob pattern to auto load files to prompt, eg: ['src\/**\/*.ts', 'src\/**\/*.tsx']

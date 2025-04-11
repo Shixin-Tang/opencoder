@@ -2,7 +2,7 @@ import { ChatMessage } from "@/app/chat-message.js"
 import { useAppContext } from "@/app/context.js"
 import { getSystemPrompt } from "@/lib/prompts.js"
 import { messageStorage } from "@/lib/storage.js"
-import { tools } from "@/tools/tools.js"
+import { tools, type ToolModule } from "@/tools/tools.js"
 import type { Message } from "@ai-sdk/react"
 import { useChat } from "@ai-sdk/react"
 import type { LanguageModelUsage, ToolExecutionOptions, ToolSet } from "ai"
@@ -21,6 +21,8 @@ import { AIInput } from "../components/ai-input.js"
 import { Onboarding } from "../components/onboarding.js"
 import { dialogContentAtom, useDialog } from "../lib/store/dialog.js"
 import { staticRender } from "@/lib/static-renderer.js"
+import type { CoderTool } from "@/tools/ai.js"
+import { inspect } from "node:util"
 
 function MyDialog() {
   const setDialogContent = useSetAtom(dialogContentAtom)
@@ -67,7 +69,7 @@ const toolsOutput = messageStorage.getItem("/tools")
 export function Chat() {
   const showDialog = useDialog()
   const [error, setError] = useState<Error | null>(null)
-  const { model, mcp: mcpTools } = useAppContext()
+  const { model, mcp: mcpTools, customTools } = useAppContext()
   const streamingToolUIRef = useRef<Record<string, React.ReactNode | null>>({})
   const inStoreTools = use(toolsOutput)
   const [usage, setUsage] = useState<LanguageModelUsage>({
@@ -75,6 +77,123 @@ export function Chat() {
     completionTokens: 0,
     totalTokens: 0,
   })
+
+  const finalTools = useMemo(() => {
+    const defaultTools = {
+      // eslint-disable-next-line no-useless-spread
+      ...Object.fromEntries(
+        Object.entries(tools).map(([key, tool]) => {
+          const generate = tool.tool.generate
+          if (typeof generate !== "undefined") {
+            const newTool = {
+              ...tool,
+              tool: {
+                ...tool.tool,
+                execute: async (args: any, toolExecution: ToolExecutionOptions) => {
+                  const ui = createStreamableUI()
+                  try {
+                    const result = generate(args, {
+                      ...toolExecution,
+                      model,
+                    })
+
+                    streamingToolUIRef.current[toolExecution.toolCallId] = ui.value
+
+                    let lastValue
+                    for await (const part of result) {
+                      if (isValidElement(part)) {
+                        ui.update(part)
+                      } else {
+                        lastValue = part
+                      }
+                    }
+
+                    // await messageStorage.setItem(
+                    //   `/tools/${toolExecution.toolCallId}`,
+                    //   render(<>{ui.value}</>).lastFrame()!,
+                    // )
+
+                    ui.done()
+
+                    return lastValue
+                  } catch (error: any) {
+                    ui.error(error)
+                    return `Error: ${error.toString()}`
+                  }
+                },
+              },
+            } as ToolModule
+            return [key, newTool]
+          }
+
+          return [key, tool]
+        }),
+      ),
+    } as Record<string, ToolModule>
+
+    const finalTools = {
+      ...defaultTools,
+      // todo make it better
+      ...mcpTools.reduce(
+        (acc, tool) => ({
+          ...acc,
+          ...Object.fromEntries(
+            Object.entries(tool).map(([key, value]) => [
+              key,
+              {
+                tool: {
+                  ...value,
+                  renderTitle: () => `MCP: ${key}`,
+                  render: (tool) =>
+                    tool.state === "result" ? (
+                      <Text color="green">
+                        {inspect(tool.result, {
+                          showHidden: false,
+                          depth: 1,
+                          colors: true,
+                          maxArrayLength: 1,
+                          maxStringLength: 50,
+                        })}
+                      </Text>
+                    ) : null,
+                },
+                metadata: { needsPermissions: () => true },
+                renderRejectedMessage: () => <Text color="red">Error</Text>,
+              } satisfies ToolModule,
+            ]),
+          ),
+        }),
+        {} as Record<string, ToolModule>,
+      ),
+      ...Object.fromEntries(
+        Object.entries(customTools).map(([key, value]) => [
+          key,
+          {
+            tool: {
+              ...value,
+              renderTitle: () => `Custom tool: ${key}`,
+              render: (tool) =>
+                tool.state === "result" ? (
+                  <Text color="green">
+                    {inspect(tool.result, {
+                      showHidden: false,
+                      depth: 1,
+                      colors: true,
+                      maxArrayLength: 1,
+                      maxStringLength: 50,
+                    })}
+                  </Text>
+                ) : null,
+            },
+            metadata: { needsPermissions: () => true },
+            renderRejectedMessage: () => <Text color="red">Error</Text>,
+          } satisfies ToolModule,
+        ]),
+      ),
+    } as Record<string, ToolModule>
+    return finalTools
+  }, [])
+
   const { messages, input, handleInputChange, handleSubmit, status, stop } = useChat({
     // initialMessages: use(inStorageMessage),
     initialMessages: [],
@@ -83,6 +202,9 @@ export function Chat() {
       prefix: "msgc",
       size: 16,
     }),
+    onError: (error) => {
+      // console.error(error)
+    },
     fetch: (async (_, options) => {
       const body = JSON.parse(options?.body as string) as {
         messages: Message[]
@@ -96,64 +218,15 @@ export function Chat() {
               // console.clear()
             }
           }, 50)
-          const defaultTools = {
-            // eslint-disable-next-line no-useless-spread
-            ...Object.fromEntries(
-              Object.entries(tools).map(([key, tool]) => {
-                const generate = tool.tool.generate
-                if (typeof generate !== "undefined") {
-                  const newTool = {
-                    ...tool.tool,
-                    execute: async (args: any, toolExecution: ToolExecutionOptions) => {
-                      const ui = createStreamableUI()
-                      try {
-                        const result = generate(args, {
-                          ...toolExecution,
-                          model,
-                        })
-
-                        streamingToolUIRef.current[toolExecution.toolCallId] = ui.value
-
-                        let lastValue
-                        for await (const part of result) {
-                          if (isValidElement(part)) {
-                            ui.update(part)
-                          } else {
-                            lastValue = part
-                          }
-                        }
-
-                        // await messageStorage.setItem(
-                        //   `/tools/${toolExecution.toolCallId}`,
-                        //   render(<>{ui.value}</>).lastFrame()!,
-                        // )
-
-                        ui.done()
-
-                        return lastValue
-                      } catch (error: any) {
-                        ui.error(error)
-                        return `Error: ${error.toString()}`
-                      }
-                    },
-                  }
-                  return [key, newTool]
-                }
-
-                return [key, tool.tool]
-              }),
-            ),
-          } as ToolSet
 
           const stream = streamText({
-            tools: {
-              ...defaultTools,
-              ...mcpTools.reduce((acc, tool) => ({ ...acc, ...tool }), {}),
-            },
+            tools: Object.fromEntries(
+              Object.entries(finalTools).map(([key, value]) => [key, value.tool]),
+            ) as ToolSet,
             maxSteps: 50,
             model,
             temperature: 1,
-            maxTokens: 10e3,
+            // maxTokens: 10e3,
             providerOptions: {
               anthropic: {
                 thinking: { type: "enabled", budgetTokens: 12000 },
@@ -164,7 +237,7 @@ export function Chat() {
             messages: [...body.messages],
             experimental_toolCallStreaming: true,
             toolCallStreaming: true,
-            onFinish: async ({ response, usage }) => {
+            onFinish: async ({ response, usage, finishReason }) => {
               await messageStorage.setItem<Message[]>(
                 "/messages",
                 appendResponseMessages({
@@ -186,6 +259,7 @@ export function Chat() {
                 // workaround for a bug in development mode
                 // console.clear()
               }
+              console.error(error)
               setError(error as Error)
             },
           })
@@ -215,7 +289,11 @@ export function Chat() {
       if (!loggedMessageIds.current.includes(message.id)) {
         loggedMessageIds.current = [...loggedMessageIds.current, message.id]
         const instance = staticRender(
-          <ChatMessage message={message} streamingToolUIRef={streamingToolUIRef} />,
+          <ChatMessage
+            message={message}
+            streamingToolUIRef={streamingToolUIRef}
+            tools={finalTools}
+          />,
         )
         setTimeout(() => {
           console.log(instance.lastFrame())
@@ -234,6 +312,7 @@ export function Chat() {
               key={message.id}
               message={message}
               streamingToolUIRef={streamingToolUIRef}
+              tools={finalTools}
             />
           )
         })}
@@ -246,6 +325,11 @@ export function Chat() {
           focus
         />
       </Box> */}
+      {status === "error" && (
+        <Box borderStyle="round" borderColor="red" flexDirection="column" gap={1}>
+          <Text color="red">An error occurred while processing your request</Text>
+        </Box>
+      )}
       {error && (
         <Box borderStyle="round" borderColor="red" flexDirection="column" gap={1}>
           <Text color="red">An error occurred while processing your request:</Text>

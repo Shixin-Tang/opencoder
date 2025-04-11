@@ -1,6 +1,7 @@
 import { applyMarkdown } from "@/lib/markdown.js"
-import { tools } from "@/tools/tools.js"
-import type { UIMessage } from "ai"
+import type { CoderTool } from "@/tools/ai.js"
+import type { ToolModule } from "@/tools/tools.js"
+import type { Tool, UIMessage } from "ai"
 import figures from "figures"
 import { Box, Text } from "ink"
 import React from "react"
@@ -9,9 +10,11 @@ import { match } from "ts-pattern"
 export const ChatMessage = React.memo(function ({
   message,
   streamingToolUIRef,
+  tools,
 }: {
   message: UIMessage
   streamingToolUIRef: React.RefObject<Record<string, React.ReactNode>>
+  tools: Record<string, ToolModule>
 }) {
   if (message.role === "user") {
     return (
@@ -46,6 +49,7 @@ export const ChatMessage = React.memo(function ({
                 {/* {part.toolInvocation.toolName === "write-file" ? <TestDiff /> : ui} */}
                 {ui}
                 {!streaming &&
+                  !tool.tool.render &&
                   part.toolInvocation.state === "result" &&
                   typeof part.toolInvocation.result === "string" && (
                     <Box borderStyle="round" borderColor="gray">

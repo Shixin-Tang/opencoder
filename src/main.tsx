@@ -75,6 +75,7 @@ const app = render(
       <AppProvider
         model={config.model || anthropic("claude-3-5-sonnet-20241022")}
         mcp={await Promise.all(config.mcp || [])}
+        customTools={config.customTools || {}}
       >
         <App />
       </AppProvider>
