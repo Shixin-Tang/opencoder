@@ -1,5 +1,5 @@
 import globalCacheDir from "global-cache-dir"
-import type { LanguageModel } from "ai"
+import type { LanguageModel, Tool } from "ai"
 import { createStorage } from "unstorage"
 import path from "node:path"
 import fsLiteDriver from "unstorage/drivers/fs-lite"
@@ -15,6 +15,7 @@ export const storage = createStorage({
 
 export type Config = {
   model?: LanguageModel
+  mcp?: Promise<Record<string, Tool>>[]
   experimental?: {
     /**
      * glob pattern to auto load files to prompt, eg: ['src\/**\/*.ts', 'src\/**\/*.tsx']

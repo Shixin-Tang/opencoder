@@ -72,7 +72,10 @@ const store = createStore()
 const app = render(
   <Provider store={store}>
     <QueryClientProvider client={queryClient}>
-      <AppProvider model={config.model || anthropic("claude-3-5-sonnet-20241022")}>
+      <AppProvider
+        model={config.model || anthropic("claude-3-5-sonnet-20241022")}
+        mcp={await Promise.all(config.mcp || [])}
+      >
         <App />
       </AppProvider>
     </QueryClientProvider>

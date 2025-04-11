@@ -67,7 +67,7 @@ const toolsOutput = messageStorage.getItem("/tools")
 export function Chat() {
   const showDialog = useDialog()
   const [error, setError] = useState<Error | null>(null)
-  const { model } = useAppContext()
+  const { model, mcp: mcpTools } = useAppContext()
   const streamingToolUIRef = useRef<Record<string, React.ReactNode | null>>({})
   const inStoreTools = use(toolsOutput)
   const [usage, setUsage] = useState<LanguageModelUsage>({
@@ -144,8 +144,12 @@ export function Chat() {
               }),
             ),
           } as ToolSet
+
           const stream = streamText({
-            tools: defaultTools,
+            tools: {
+              ...defaultTools,
+              ...mcpTools.reduce((acc, tool) => ({ ...acc, ...tool }), {}),
+            },
             maxSteps: 50,
             model,
             temperature: 1,

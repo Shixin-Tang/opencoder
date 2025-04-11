@@ -43,7 +43,7 @@ export default {
 } satisfies Config
 ```
 
-#### 2. MCP makes it easy (WIP)
+#### 2. MCP makes it easy
 Integrate powerful MCP capabilities into your workflow in 1 step. OpenCoder provides ready-to-use MCP tools that can be implemented with just a few lines of code:
 ```typescript
 import { playwright } from 'opencoder/mcp';
@@ -53,6 +53,10 @@ export default {
 } satisfies Config
 ```
 
+More examples:
+- [Create MCP tools](https://github.com/OpenCoder-AI/OpenCoder/tree/main/examples/mcp-create-mcp)
+- [Use MCP tools](https://github.com/OpenCoder-AI/OpenCoder/tree/main/examples/mcp)
+
 #### 3. Cross-platform shell
 OpenCoder has a cross-platform shell that supports Windows, Linux, and MacOS. Powered by [Deno shell](https://github.com/denoland/deno_task_shell)
 
@@ -61,6 +65,8 @@ OpenCoder has a cross-platform shell that supports Windows, Linux, and MacOS. Po
 - Write file
 - Edit file
 - Think
+- Memory edit
+- Memory read
 - Planning
 - Grep: powered by @vscode/ripgrep
 
