@@ -21,7 +21,7 @@ npx opencoder@next
 - Built on top of the Vercel AI SDK. Fully compatible with the AI SDK model.
 - Supports any LLM providers that the AI SDK supports (OpenAI, Anthropic, Google, etc.)
 - Cross-platform shell: which means supports Windows, Linux, and MacOS.
-- 60 FPS UI rendering, powered by React concurrent rendering
+- High performance: 60 FPS UI rendering, powered by React concurrent rendering, React Compiler
 
 ## Demo
 
