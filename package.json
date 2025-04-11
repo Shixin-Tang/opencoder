@@ -1,7 +1,7 @@
 {
   "name": "opencoder",
   "type": "module",
-  "version": "0.0.63-next.1",
+  "version": "0.0.63",
   "exports": {
     ".": {
       "import": "./dist/lib.js",
