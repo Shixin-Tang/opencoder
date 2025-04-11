@@ -54,8 +54,8 @@ export default {
 ```
 
 More examples:
-- [Create MCP tools](https://github.com/OpenCoder-AI/OpenCoder/tree/main/examples/mcp-create-mcp)
-- [Use MCP tools](https://github.com/OpenCoder-AI/OpenCoder/tree/main/examples/mcp)
+- [Create MCP tools](./examples/mcp-create-mcp)
+- [Playwright example](./examples/mcp)
 
 #### 3. Cross-platform shell
 OpenCoder has a cross-platform shell that supports Windows, Linux, and MacOS. Powered by [Deno shell](https://github.com/denoland/deno_task_shell)
