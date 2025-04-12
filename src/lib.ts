@@ -1,5 +1,5 @@
 import globalCacheDir from "global-cache-dir"
-import type { LanguageModel, Tool } from "ai"
+import type { LanguageModel, Tool, EmbeddingModel } from "ai"
 import { createStorage } from "unstorage"
 import path from "node:path"
 import fsLiteDriver from "unstorage/drivers/fs-lite"
@@ -19,6 +19,10 @@ export type Config = {
   mcp?: Promise<Record<string, Tool>>[]
   customTools?: Record<string, Tool<any, any>>
   experimental?: {
+    codeBaseIndex?: {
+      enabled?: boolean
+      model?: EmbeddingModel<any>
+    }
     /**
      * glob pattern to auto load files to prompt, eg: ['src\/**\/*.ts', 'src\/**\/*.tsx']
      * @default true

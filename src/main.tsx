@@ -73,7 +73,7 @@ const app = render(
   <Provider store={store}>
     <QueryClientProvider client={queryClient}>
       <AppProvider
-        model={config.model || anthropic("claude-3-5-sonnet-20241022")}
+        {...config}
         mcp={await Promise.all(config.mcp || [])}
         customTools={config.customTools || {}}
       >

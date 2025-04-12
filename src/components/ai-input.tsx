@@ -1,7 +1,8 @@
 import { Spinner } from "@inkjs/ui"
 import { Box, Text, useInput } from "ink";
 import { memo, Suspense, useCallback, useEffect, useMemo, useState } from "react"
-import type { LanguageModelUsage, Message } from "ai"
+import path from "path"
+import { embed, type LanguageModelUsage, type Message } from "ai"
 import { AutoUpdater } from "@/components/auto-updater.js"
 import { formatDurationMilliseconds } from "../lib/duration.js"
 import { getTheme } from "../lib/theme.js"
@@ -10,10 +11,15 @@ import { useCommandAutocomplete } from "../lib/use-command-autocomplete.js"
 import { useTerminalSize } from "../lib/use-terminal-size.js"
 import TextInput from "./text-input.js"
 import React from "react";
+import { useMutation } from "@tanstack/react-query"
+import { globbyStream } from "globby"
+import { useAppContext } from "@/app/context.js"
+import lancedb, { type Table } from "@lancedb/lancedb"
+import { env } from "@/lib/env.js"
 
 export type Command = {
   name: string
-  type: "prompt"
+  type?: "prompt"
   description: string
   argNames?: string[]
   aliases?: string[]
@@ -60,12 +66,58 @@ export const AIInput = memo(({
   const [cursorOffset, setCursorOffset] = useState<number>(input.length)
   const [pastedText, setPastedText] = useState<string | null>(null)
   const [timer, setTimer] = useState(0)
+  const { model, experimental } = useAppContext()
+  const index = useMutation({
+    mutationFn: async ({}: {}) => {
+      if (!experimental?.codeBaseIndex?.enabled) {
+        throw new Error("Codebase indexing is not enabled")
+      }
+      const embeddingModel =
+        experimental?.codeBaseIndex?.model || (model as any).embedding("text-embedding-ada-002")
+      async function getVector(text: string) {
+        const { embedding } = await embed({
+          model: embeddingModel,
+          value: text,
+        })
+        return embedding
+      }
+      const db = await lancedb.connect(path.join(env.cwd, ".coder/embeddings"))
+
+      let table: Table | undefined
+
+      const files = globbyStream("**/*.{js,ts,jsx,tsx,md,css,html,py,go,rs}", {
+        cwd: env.cwd,
+        gitignore: true,
+        ignoreFiles: [
+          ".eslintignore",
+          ".gitignore",
+          ".prettierrc",
+          ".prettierignore",
+          ".coderignore",
+        ],
+      })
+      for await (const file of files) {
+        const data = [
+          {
+            id: file,
+            vector: await getVector(await Bun.file(file as string).text()),
+            content: file,
+          },
+        ]
+        if (!table) {
+          table = await db.createTable("codebase_index", data, { existOk: true })
+          continue
+        }
+        await table.add(data)
+      }
+    },
+  })
 
   useEffect(() => {
-    if (message.text === "Ctrl-C") {
+    if (exitMessage.key === "Ctrl-C") {
       onStop()
     }
-  }, [message.text, onStop])
+  }, [exitMessage.key, onStop])
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -147,6 +199,15 @@ export const AIInput = memo(({
     onInputChange("")
     clearSuggestions()
     setPastedText(null)
+
+    if (finalInput.startsWith("/")) {
+      const command = commands.find((cmd) => cmd.userFacingName() === finalInput.slice(1).trim())
+      if (command?.name === "sync") {
+        index.mutate({})
+      }
+      return
+    }
+
     onChatSubmit()
   }
 
@@ -215,15 +276,27 @@ export const AIInput = memo(({
       {suggestions.length === 0 && (
         <Box flexDirection="row" justifyContent="space-between" paddingX={2} paddingY={0}>
           <Box justifyContent="flex-start" gap={1} flexDirection="row">
-            {exitMessage.show ? (
-              <Text dimColor>Press {exitMessage.key} again to exit</Text>
-            ) : message.show ? (
-              <Text dimColor>{message.text}</Text>
-            ) : (
-              <>
-                <Text dimColor>/ for commands</Text>
-              </>
+            {index.variables && (
+              <Box>
+                <Text color={index.isError ? "red" : "gray"} dimColor>
+                  {index.isPending
+                    ? "Indexing..."
+                    : index.isSuccess
+                      ? "Indexing complete"
+                      : "Indexing failed: " + index.error?.message}
+                </Text>
+              </Box>
             )}
+            {!index.variables &&
+              (exitMessage.show ? (
+                <Text dimColor>Press {exitMessage.key} again to exit</Text>
+              ) : message.show ? (
+                <Text dimColor>{message.text}</Text>
+              ) : (
+                <>
+                  <Text dimColor>/ for commands</Text>
+                </>
+              ))}
           </Box>
           <Box justifyContent="flex-end" gap={1} flexDirection="row">
             {timer > 0 && (

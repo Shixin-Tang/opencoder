@@ -37,5 +37,7 @@
     "coder.d.ts",
     "src",
     "package.json"
-  ]
+,
+".scripts/test-vectra.ts"
+]
 }

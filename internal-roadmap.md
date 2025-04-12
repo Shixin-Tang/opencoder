@@ -7,3 +7,5 @@
   - [ ] convert <Text> to <span> and className
 - [ ] Proper release process (changeset + changelog)
 - [ ] Add more tests
+- [ ] Codebase index: automatically sync
+- [ ] Codebase index: better model selection

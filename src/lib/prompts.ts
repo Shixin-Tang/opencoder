@@ -2,14 +2,23 @@ import { env } from "@/lib/env.js"
 import { $ } from "dax-sh"
 import { readFileSync } from "node:fs"
 import dedent from "dedent"
-import glob from "fast-glob"
+import { globby } from "globby"
 import { config } from "@/lib/config.js"
 import { detect } from "package-manager-detector/detect"
-
+import { P } from "ts-pattern"
+import { match } from "ts-pattern"
+import path from "node:path"
+import lancedb from "@lancedb/lancedb"
+import { embed, type EmbeddingModel, type LanguageModel } from "ai"
 export const INTERRUPT_MESSAGE = "[Request interrupted by user]"
 export const INTERRUPT_MESSAGE_FOR_TOOL_USE = "[Request interrupted by user for tool use]"
 
-export async function getSystemPrompt() {
+export async function getSystemPrompt(
+  lastMessage: string,
+  codeBaseIndexEnabled: boolean,
+  embeddingModel?: EmbeddingModel<any>,
+) {
+  const db = await lancedb.connect(path.join(env.cwd, ".coder/embeddings"))
   const isGit = await $`git rev-parse --is-inside-work-tree`.text().catch(() => false)
   const packageManager = await detect({ cwd: env.cwd })
   const envInfo = `Here is useful information about the environment you are running in:
@@ -30,34 +39,69 @@ ${packageManager ? `Package manager: ${packageManager?.name}@${packageManager?.v
     "**/static",
     "**/.git",
   ]
-  const allFiles = await glob(["**/*.{js,ts,jsx,tsx,md,css,html,py,go,rs}", "package.json"], {
+  const allFiles = await globby(["**/*.{js,ts,jsx,tsx,md,css,html,py,go,rs}", "package.json"], {
     cwd: env.cwd!,
     ignore: defaultIgnore,
+    gitignore: true,
+    ignoreFiles: [".eslintignore", ".gitignore", ".prettierrc", ".prettierignore", ".coderignore"],
   })
-  const fileToLoad =
-    typeof config.experimental?.autoLoad === "undefined" || config.experimental?.autoLoad
-      ? await glob(
-          [
-            ...(typeof config.experimental?.autoLoad === "undefined" ||
-            config.experimental?.autoLoad === true
-              ? // if there are less than 20 files, default to all of them
-                allFiles.length < 20
-                ? ["**/*.{js,ts,jsx,tsx,md,css,py,go,rs}", "package.json"]
-                : ["package.json"]
-              : (config.experimental?.autoLoad as string[])),
-            ".coder/**/*.md",
-          ],
-          {
-            cwd: env.cwd!,
-            ignore: defaultIgnore,
-          },
-        )
-      : []
+  const fileToLoad = await match(config.experimental?.autoLoad)
+    .with(undefined, true, async () => {
+      const patterns =
+        allFiles.length < 20
+          ? ["**/*.{js,ts,jsx,tsx,md,css,py,go,rs}", "package.json"]
+          : ["package.json"]
+
+      return globby([...patterns, ".coder/**/*.md"], {
+        cwd: env.cwd!,
+        ignore: defaultIgnore,
+        gitignore: true,
+        ignoreFiles: [
+          ".eslintignore",
+          ".gitignore",
+          ".prettierrc",
+          ".prettierignore",
+          ".coderignore",
+        ],
+      })
+    })
+    .with(P.array(), async (patterns) => {
+      return globby([...patterns, ".coder/**/*.md"], {
+        cwd: env.cwd!,
+        ignore: defaultIgnore,
+        gitignore: true,
+        ignoreFiles: [
+          ".eslintignore",
+          ".gitignore",
+          ".prettierrc",
+          ".prettierignore",
+          ".coderignore",
+        ],
+      })
+    })
+    .otherwise(() => [] as string[])
+
+  const fileToLoad2 = await match(codeBaseIndexEnabled)
+    .with(true, async () => {
+      try {
+        const { embedding } = await embed({
+          model: embeddingModel!,
+          value: lastMessage,
+        })
+        const table = await db.openTable("codebase_index")
+        const results = await table!.vectorSearch(embedding).toArray()
+        return results.map((result) => result.id)
+      } catch (e) {
+        throw new Error("You have not indexed your codebase yet. Run /sync to index your codebase.")
+      }
+    })
+    .otherwise(() => fileToLoad)
+
   const allFilesContent = allFiles
     .map(
       (file) => dedent`
-  <file path="${file}" ${fileToLoad.includes(file) ? "" : "truncated"}>
-  ${fileToLoad.includes(file) ? readFileSync(file, "utf-8") : ""}
+  <file path="${file}" ${fileToLoad2.includes(file) ? "" : "truncated"}>
+  ${fileToLoad2.includes(file) ? readFileSync(path.join(env.cwd!, file), "utf-8") : ""}
   </file>
   `,
     )

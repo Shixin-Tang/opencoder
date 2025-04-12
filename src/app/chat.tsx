@@ -23,6 +23,7 @@ import { dialogContentAtom, useDialog } from "../lib/store/dialog.js"
 import { staticRender } from "@/lib/static-renderer.js"
 import type { CoderTool } from "@/tools/ai.js"
 import { inspect } from "node:util"
+import { anthropic } from "@ai-sdk/anthropic"
 
 function MyDialog() {
   const setDialogContent = useSetAtom(dialogContentAtom)
@@ -69,7 +70,7 @@ const toolsOutput = messageStorage.getItem("/tools")
 export function Chat() {
   const showDialog = useDialog()
   const [error, setError] = useState<Error | null>(null)
-  const { model, mcp: mcpTools, customTools } = useAppContext()
+  const { model, mcp: mcpTools, customTools, experimental } = useAppContext()
   const streamingToolUIRef = useRef<Record<string, React.ReactNode | null>>({})
   const inStoreTools = use(toolsOutput)
   const [usage, setUsage] = useState<LanguageModelUsage>({
@@ -166,7 +167,7 @@ export function Chat() {
         {} as Record<string, ToolModule>,
       ),
       ...Object.fromEntries(
-        Object.entries(customTools).map(([key, value]) => [
+        Object.entries(customTools || {}).map(([key, value]) => [
           key,
           {
             tool: {
@@ -224,16 +225,20 @@ export function Chat() {
               Object.entries(finalTools).map(([key, value]) => [key, value.tool]),
             ) as ToolSet,
             maxSteps: 50,
-            model,
+            model: model || anthropic("claude-3-5-sonnet-20241022"),
             temperature: 1,
-            // maxTokens: 10e3,
+            maxTokens: 10e3,
             providerOptions: {
               anthropic: {
                 thinking: { type: "enabled", budgetTokens: 12000 },
               },
             },
             abortSignal: options!.signal!,
-            system: await getSystemPrompt(),
+            system: await getSystemPrompt(
+              body.messages.at(-1)?.content || "",
+              experimental?.codeBaseIndex?.enabled || false,
+              experimental?.codeBaseIndex?.model,
+            ),
             messages: [...body.messages],
             experimental_toolCallStreaming: true,
             toolCallStreaming: true,
@@ -259,7 +264,7 @@ export function Chat() {
                 // workaround for a bug in development mode
                 // console.clear()
               }
-              console.error(error)
+              // console.error(error)
               setError(error as Error)
             },
           })
@@ -325,7 +330,7 @@ export function Chat() {
           focus
         />
       </Box> */}
-      {status === "error" && (
+      {status === "error" && !error && (
         <Box borderStyle="round" borderColor="red" flexDirection="column" gap={1}>
           <Text color="red">An error occurred while processing your request</Text>
         </Box>
@@ -353,22 +358,19 @@ export function Chat() {
         }
         usage={usage}
         // TODO: add commands: /checkpoint, /revert, /commit, /mcp, /cost
-        commands={
-          [
-            // {
-            //   type: "prompt",
-            //   name: "test",
-            //   description: "test",
-            //   userFacingName: () => "test",
-            // },
-            // {
-            //   type: "bash",
-            //   name: "command 2",
-            //   description: "command 2 description",
-            //   userFacingName: () => "command 2",
-            // },
-          ]
-        }
+        commands={[
+          // {
+          //   type: "prompt",
+          //   name: "test",
+          //   description: "test",
+          //   userFacingName: () => "test",
+          // },
+          {
+            name: "sync",
+            description: "Sync codebase to the codebase index, stored in .coder/embeddings",
+            userFacingName: () => "sync",
+          },
+        ]}
         isDisabled={false}
         isLoading={status === "streaming" || status === "submitted"}
         messages={messages}

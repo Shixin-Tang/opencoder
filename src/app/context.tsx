@@ -1,33 +1,21 @@
 import React, { createContext, useContext, useMemo, type ReactNode } from "react"
-import type { LanguageModelV1, Tool } from "ai"
 import assert from "node:assert"
+import type { Config } from "@/lib.js"
+import type { Tool } from "ai"
 
-type AppContextType = {
-  model: LanguageModelV1
+type AppContextType = Omit<Config, "mcp"> & {
   mcp: Record<string, Tool>[]
-  customTools: Record<string, Tool>
 }
 
 const AppContext = createContext<AppContextType>(null!)
 
 export function AppProvider({
   children,
-  model,
-  mcp,
-  customTools,
+  ...config
 }: {
   children: React.ReactNode
-  model: LanguageModelV1
-  mcp: Record<string, Tool>[]
-  customTools: Record<string, Tool>
-}) {
-  return (
-    <AppContext.Provider
-      value={useMemo(() => ({ model, mcp, customTools }), [model, mcp, customTools])}
-    >
-      {children}
-    </AppContext.Provider>
-  )
+} & AppContextType) {
+  return <AppContext.Provider value={config}>{children}</AppContext.Provider>
 }
 
 export function useAppContext() {
