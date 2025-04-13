@@ -31,7 +31,7 @@ export default defineConfig({
       input: {
         cli: "./src/index.ts",
         lib: "./src/lib.ts",
-        mcp: "./src/mcp.ts",
+        mcp: "./src/mcp.tsx",
       },
       external: [
         "ai",
