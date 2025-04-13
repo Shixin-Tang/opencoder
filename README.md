@@ -70,6 +70,11 @@ OpenCoder has a cross-platform shell that supports Windows, Linux, and MacOS. Po
 - Planning
 - Grep: powered by @vscode/ripgrep
 
+
+## Available MCP tools
+- Playwright
+- Web search
+
 ## Roadmap
 
 - [ ] Tool confirmation dialog
