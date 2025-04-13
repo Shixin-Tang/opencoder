@@ -6,13 +6,7 @@ import { tools, type ToolModule } from "@/tools/tools.js"
 import type { Message } from "@ai-sdk/react"
 import { useChat } from "@ai-sdk/react"
 import type { LanguageModelUsage, ToolExecutionOptions, ToolSet } from "ai"
-import {
-  appendResponseMessages,
-  createDataStreamResponse,
-  createIdGenerator,
-  smoothStream,
-  streamText,
-} from "ai"
+import { appendResponseMessages, createDataStreamResponse, createIdGenerator, streamText } from "ai"
 import { createStreamableUI } from "ai/rsc"
 import { Box, Text, useInput } from "ink"
 import { useSetAtom } from "jotai"
@@ -21,7 +15,6 @@ import { AIInput } from "../components/ai-input.js"
 import { Onboarding } from "../components/onboarding.js"
 import { dialogContentAtom, useDialog } from "../lib/store/dialog.js"
 import { staticRender } from "@/lib/static-renderer.js"
-import type { CoderTool } from "@/tools/ai.js"
 import { inspect } from "node:util"
 import { anthropic } from "@ai-sdk/anthropic"
 
@@ -80,60 +73,8 @@ export function Chat() {
   })
 
   const finalTools = useMemo(() => {
-    const defaultTools = {
-      // eslint-disable-next-line no-useless-spread
-      ...Object.fromEntries(
-        Object.entries(tools).map(([key, tool]) => {
-          const generate = tool.tool.generate
-          if (typeof generate !== "undefined") {
-            const newTool = {
-              ...tool,
-              tool: {
-                ...tool.tool,
-                execute: async (args: any, toolExecution: ToolExecutionOptions) => {
-                  const ui = createStreamableUI()
-                  try {
-                    const result = generate(args, {
-                      ...toolExecution,
-                      model,
-                    })
-
-                    streamingToolUIRef.current[toolExecution.toolCallId] = ui.value
-
-                    let lastValue
-                    for await (const part of result) {
-                      if (isValidElement(part)) {
-                        ui.update(part)
-                      } else {
-                        lastValue = part
-                      }
-                    }
-
-                    // await messageStorage.setItem(
-                    //   `/tools/${toolExecution.toolCallId}`,
-                    //   render(<>{ui.value}</>).lastFrame()!,
-                    // )
-
-                    ui.done()
-
-                    return lastValue
-                  } catch (error: any) {
-                    ui.error(error)
-                    return `Error: ${error.toString()}`
-                  }
-                },
-              },
-            } as ToolModule
-            return [key, newTool]
-          }
-
-          return [key, tool]
-        }),
-      ),
-    } as Record<string, ToolModule>
-
     const finalTools = {
-      ...defaultTools,
+      ...tools,
       // todo make it better
       ...mcpTools.reduce(
         (acc, tool) => ({
@@ -145,18 +86,20 @@ export function Chat() {
                 tool: {
                   ...value,
                   renderTitle: () => `MCP: ${key}`,
-                  render: (tool) =>
-                    tool.state === "result" ? (
-                      <Text color="green">
-                        {inspect(tool.result, {
-                          showHidden: false,
-                          depth: 1,
-                          colors: true,
-                          maxArrayLength: 1,
-                          maxStringLength: 50,
-                        })}
-                      </Text>
-                    ) : null,
+                  render: !value.generate
+                    ? (tool) =>
+                        tool.state === "result" ? (
+                          <Text color="green">
+                            {inspect(tool.result, {
+                              showHidden: false,
+                              depth: 1,
+                              colors: true,
+                              maxArrayLength: 1,
+                              maxStringLength: 50,
+                            })}
+                          </Text>
+                        ) : null
+                    : undefined,
                 },
                 metadata: { needsPermissions: () => true },
                 renderRejectedMessage: () => <Text color="red">Error</Text>,
@@ -173,18 +116,20 @@ export function Chat() {
             tool: {
               ...value,
               renderTitle: () => `Custom tool: ${key}`,
-              render: (tool) =>
-                tool.state === "result" ? (
-                  <Text color="green">
-                    {inspect(tool.result, {
-                      showHidden: false,
-                      depth: 1,
-                      colors: true,
-                      maxArrayLength: 1,
-                      maxStringLength: 50,
-                    })}
-                  </Text>
-                ) : null,
+              render: !value.generate
+                ? (tool) =>
+                    tool.state === "result" ? (
+                      <Text color="green">
+                        {inspect(tool.result, {
+                          showHidden: false,
+                          depth: 1,
+                          colors: true,
+                          maxArrayLength: 1,
+                          maxStringLength: 50,
+                        })}
+                      </Text>
+                    ) : null
+                : undefined,
             },
             metadata: { needsPermissions: () => true },
             renderRejectedMessage: () => <Text color="red">Error</Text>,
@@ -192,10 +137,57 @@ export function Chat() {
         ]),
       ),
     } as Record<string, ToolModule>
-    return finalTools
+    return Object.fromEntries(
+      Object.entries(finalTools).map(([key, tool]) => {
+        const generate = tool.tool.generate
+        if (typeof generate !== "undefined") {
+          const newTool = {
+            ...tool,
+            tool: {
+              ...tool.tool,
+              execute: async (args: any, toolExecution: ToolExecutionOptions) => {
+                const ui = createStreamableUI()
+                try {
+                  const result = generate(args, {
+                    ...toolExecution,
+                    model,
+                  })
+
+                  streamingToolUIRef.current[toolExecution.toolCallId] = ui.value
+
+                  let lastValue
+                  for await (const part of result) {
+                    if (isValidElement(part)) {
+                      ui.update(part)
+                    } else {
+                      lastValue = part
+                    }
+                  }
+
+                  // await messageStorage.setItem(
+                  //   `/tools/${toolExecution.toolCallId}`,
+                  //   render(<>{ui.value}</>).lastFrame()!,
+                  // )
+
+                  ui.done()
+
+                  return lastValue
+                } catch (error: any) {
+                  ui.error(error)
+                  return `Error: ${error.toString()}`
+                }
+              },
+            },
+          } as ToolModule
+          return [key, newTool]
+        }
+
+        return [key, tool]
+      }),
+    )
   }, [])
 
-  const { messages, input, handleInputChange, handleSubmit, status, stop } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, setMessages, status, stop } = useChat({
     // initialMessages: use(inStorageMessage),
     initialMessages: [],
     sendExtraMessageFields: true,
@@ -227,10 +219,10 @@ export function Chat() {
             maxSteps: 50,
             model: model || anthropic("claude-3-5-sonnet-20241022"),
             temperature: 1,
-            maxTokens: 10e3,
+            // maxTokens: 10e3,
             providerOptions: {
               anthropic: {
-                thinking: { type: "enabled", budgetTokens: 12000 },
+                // thinking: { type: "enabled", budgetTokens: 12000 },
               },
             },
             abortSignal: options!.signal!,
@@ -240,7 +232,6 @@ export function Chat() {
               experimental?.codeBaseIndex?.model,
             ),
             messages: [...body.messages],
-            experimental_toolCallStreaming: true,
             toolCallStreaming: true,
             onFinish: async ({ response, usage, finishReason }) => {
               await messageStorage.setItem<Message[]>(

@@ -39,9 +39,25 @@ export default defineConfig({
         "@ai-sdk/openai",
         "@ai-sdk/anthropic",
         "@vscode/ripgrep",
+        "@lancedb/lancedb",
         "unconfig",
       ],
-      output: {},
+      output: {
+        minifyInternalExports: false,
+      },
+      onwarn(warning, warn) {
+        if (
+          warning.code === "MODULE_LEVEL_DIRECTIVE" ||
+          warning.code === "EVAL" ||
+          warning.code === "SOURCEMAP_ERROR" ||
+          warning.code === "UNUSED_EXTERNAL_IMPORT" ||
+          warning.code === "INVALID_ANNOTATION" ||
+          warning.code === "CIRCULAR_DEPENDENCY"
+        ) {
+          return
+        }
+        warn(warning)
+      },
     },
   },
   plugins: [

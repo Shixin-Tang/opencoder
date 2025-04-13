@@ -3,11 +3,13 @@ import type { LanguageModel, Tool, EmbeddingModel } from "ai"
 import { createStorage } from "unstorage"
 import path from "node:path"
 import fsLiteDriver from "unstorage/drivers/fs-lite"
+import type { CoderTool } from "@/tools/ai.js"
 
 export { anthropic, createAnthropic } from "@ai-sdk/anthropic"
 export { createGoogleGenerativeAI, google } from "@ai-sdk/google"
 export { createOpenAI, openai } from "@ai-sdk/openai"
 export { z } from "zod"
+export { default as React } from "react"
 
 const cacheDir = await globalCacheDir("OpenCoder")
 export const storage = createStorage({
@@ -16,8 +18,8 @@ export const storage = createStorage({
 
 export type Config = {
   model?: LanguageModel
-  mcp?: Promise<Record<string, Tool>>[]
-  customTools?: Record<string, Tool<any, any>>
+  mcp?: Promise<Record<string, CoderTool>>[]
+  customTools?: Record<string, CoderTool>
   experimental?: {
     codeBaseIndex?: {
       enabled?: boolean

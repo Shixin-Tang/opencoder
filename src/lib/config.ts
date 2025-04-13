@@ -7,7 +7,7 @@ const { config, sources } = await loadConfig<Config>({
     {
       files: "coder.config",
       // default extensions
-      extensions: ["ts", "mts", "cts", "js", "mjs", "cjs", "json", ""],
+      extensions: ["ts", "mts", "cts", "js", "mjs", "cjs", "jsx", "tsx", "json", ""],
     },
     // load `my` field in `package.json` if no above config files found
     {

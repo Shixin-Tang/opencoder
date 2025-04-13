@@ -50,7 +50,7 @@ export const metadata = {
 } satisfies ToolMetadata
 
 export const tool = defineTool({
-	description: `Executes a given bash command in a persistent shell session with optional timeout, ensuring proper handling and security measures.
+  description: `Executes a given bash command in a persistent shell session with optional timeout, ensuring proper handling and security measures.
 
 Before executing the command, please follow these steps:
 
@@ -194,40 +194,33 @@ EOF
 Important:
 - Return an empty response - the user will see the gh output directly
 - Never update git config`,
-	parameters: z.strictObject({
-		command: z.string().describe("The command to execute"),
-		timeout: z
-			.number()
-			.optional()
-			.describe("Optional timeout in milliseconds (max 600000)"),
-	}),
-	// TODO handle persistent shell session (for example npm run dev)
-	async *generate({ command, timeout }, { abortSignal }) {
-		$.cd(env.cwd!)
-		let cmd = $`bash -c ${command}`
-		// if (abortSignal) {
-		// 	cmd = cmd.signal(abortSignal as any)
-		// }
-		if (timeout) {
-			cmd = cmd.timeout(timeout)
-		}
-		const cmdOutput = cmd.noThrow().stdout("piped").spawn()
-		let out = new Uint8Array()
-		for await (const chunk of cmdOutput.stdout()) {
-			out = concatenate([out, chunk])
-			yield (
-				<Box height={4} overflow="hidden">
-					<Text>{new TextDecoder().decode(out)}</Text>
-				</Box>
-			)
-		}
-		yield new TextDecoder().decode(out)
-	},
-	renderTitle: ({ args }) => (
-		<Text backgroundColor="gray" color="red">
-			{args.command}
-		</Text>
-	),
+  parameters: z.strictObject({
+    command: z.string().describe("The command to execute"),
+    timeout: z.number().optional().describe("Optional timeout in milliseconds (max 600000)"),
+  }),
+  // TODO handle persistent shell session (for example npm run dev)
+  async *generate({ command, timeout }, { abortSignal }) {
+    $.cd(env.cwd!)
+    let cmd = $`bash -c ${command}`
+    // if (abortSignal) {
+    // 	cmd = cmd.signal(abortSignal as any)
+    // }
+    if (timeout) {
+      cmd = cmd.timeout(timeout)
+    }
+    const cmdOutput = cmd.noThrow().stdout("piped").spawn()
+    let out = new Uint8Array()
+    for await (const chunk of cmdOutput.stdout()) {
+      out = concatenate([out, chunk])
+      yield (
+        <Box height={4} overflow="hidden">
+          <Text>{new TextDecoder().decode(out)}</Text>
+        </Box>
+      )
+    }
+    yield new TextDecoder().decode(out)
+  },
+  renderTitle: ({ args }) => <Text>{args.command}</Text>,
 })
 
 export function render() {

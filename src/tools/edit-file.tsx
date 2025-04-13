@@ -91,21 +91,25 @@ ${addLineNumbers({
     }
   },
   render: ({ toolCallId, state, args: { filePath, oldString, newString } }) => {
-    if (
-      state !== "partial-call" ||
-      !filePath ||
-      !oldString ||
-      !newString ||
-      oldString.trim() === newString.trim()
-    ) {
+    try {
+      if (
+        state !== "partial-call" ||
+        !filePath ||
+        !oldString ||
+        !newString ||
+        oldString.trim() === newString.trim()
+      ) {
+        return null
+      }
+      const { patch } = applyEdit(filePath, oldString, newString)
+
+      // TODO write once
+      messageStorage.setItem(`patch/${toolCallId}`, JSON.stringify(patch))
+
+      return <FileContentDiff filePath={filePath} structuredPatch={patch} verbose={false} />
+    } catch (error: any) {
       return null
     }
-    const { patch } = applyEdit(filePath, oldString, newString)
-
-    // TODO write once
-    messageStorage.setItem(`patch/${toolCallId}`, JSON.stringify(patch))
-
-    return <FileContentDiff filePath={filePath} structuredPatch={patch} verbose={false} />
   },
   renderTitle: ({ args }) => (
     <Text backgroundColor="gray" color="red">

@@ -2,6 +2,7 @@
   "name": "opencoder",
   "type": "module",
   "version": "0.0.67",
+  "license": "Apache-2.0",
   "exports": {
     ".": {
       "import": "./dist/lib.js",
@@ -42,6 +43,8 @@
     "unconfig": "^7.3.1"
   },
   "devDependencies": {
+    "@agentic/ai-sdk": "^7.6.4",
+    "@agentic/duck-duck-go": "^7.6.4",
     "@ai-sdk/react": "^1.2.8",
     "@biomejs/biome": "^1.9.4",
     "@inkjs/ui": "^2.0.0",
@@ -69,7 +72,7 @@
     "global-cache-dir": "^6.0.1",
     "globby": "^14.1.0",
     "humanize-duration": "^3.32.1",
-    "ink": "npm:rink2@0.0.4",
+    "ink": "npm:rink2@0.0.9",
     "ink-big-text": "^2.0.0",
     "ink-gradient": "^3.0.0",
     "ink-markdown": "^1.0.4",
