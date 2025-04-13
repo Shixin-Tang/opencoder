@@ -4,7 +4,7 @@ import type { Config } from "@/lib.js"
 import type { Tool } from "ai"
 import type { CoderTool } from "@/tools/ai.js"
 
-type AppContextType = Omit<Config, "mcp"> & {
+export type AppContextType = Omit<Config, "mcp"> & {
   mcp: Record<string, CoderTool>[]
 }
 

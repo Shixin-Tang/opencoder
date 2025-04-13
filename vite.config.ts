@@ -3,7 +3,6 @@ import path from "node:path"
 import { defineConfig } from "vite"
 import dts from "vite-plugin-dts"
 import tsconfigPaths from "vite-tsconfig-paths"
-import react from "@vitejs/plugin-react"
 import babel from "vite-plugin-babel"
 
 export default defineConfig({
@@ -26,7 +25,7 @@ export default defineConfig({
   build: {
     target: "esnext",
     minify: "esbuild",
-    sourcemap: true,
+    sourcemap: process.env.VITEST ? false : true,
     rollupOptions: {
       input: {
         cli: "./src/index.ts",
@@ -64,10 +63,19 @@ export default defineConfig({
     tsconfigPaths({ projects: [path.resolve(__dirname, "tsconfig.json")] }),
     dts({ tsconfigPath: path.resolve(__dirname, "tsconfig.json") }),
     // process.env.NODE_ENV === "production" &&
-    babel({
+    (babel as any)({
       include: /\.tsx$/,
       babelConfig: {
-        plugins: [[path.resolve(__dirname, "node_modules/babel-plugin-react-compiler"), {}]],
+        plugins: [
+          [path.resolve(__dirname, "node_modules/babel-plugin-react-compiler"), {}],
+          process.env.NODE_ENV === "development" && [
+            "@locator/babel-jsx/dist",
+            {
+              env: "development",
+            },
+          ],
+          process.env.NODE_ENV === "development" && ["@hh.ru/babel-plugin-react-displayname"],
+        ].filter((v) => !!v),
       },
     }),
     {

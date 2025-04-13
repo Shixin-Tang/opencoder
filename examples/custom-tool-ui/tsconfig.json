@@ -12,6 +12,7 @@
     "baseUrl": "."
   },
   "include": [
-    "."
-  ]
+    "coder.config.tsx"
+  ],
+  "exclude": []
 }

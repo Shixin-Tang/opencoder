@@ -19,6 +19,9 @@
     },
     "resolveJsonModule": true,
     "allowImportingTsExtensions": false,
+    // "types": [
+    //   "vitest/globals"
+    // ],
     "allowJs": true,
     // Best practices
     "strict": true,
@@ -34,10 +37,10 @@
     "skipLibCheck": true
   },
   "include": [
+    "vite.config.ts",
     "coder.d.ts",
     "src",
     "package.json"
 ,
-".scripts/test-vectra.ts"
 ]
 }

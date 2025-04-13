@@ -72,8 +72,8 @@ export function App() {
   )
 }
 
-render(
-  <Suspense fallback={<Text>Bad request...</Text>}>
-    <App />
-  </Suspense>,
-)
+// render(
+//   <Suspense fallback={<Text>Bad request...</Text>}>
+//     <App />
+//   </Suspense>,
+// )

@@ -13,9 +13,9 @@ if (process.argv.includes("--empty-cache")) {
 globalThis.window = {} as any
 globalThis.stop = () => {}
 if (import.meta.env.DEV) {
-  import("./lib/devtools/devtool.js").then(() => {
-    import("./main.js")
-  })
+  // import("./lib/devtools/devtool.js").then(() => {
+  import("./main.js")
+  // })
 } else {
   import("./main.js")
 }
