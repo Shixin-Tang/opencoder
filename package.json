@@ -44,7 +44,9 @@
   },
   "devDependencies": {
     "@agentic/ai-sdk": "^7.6.4",
+    "@agentic/brave-search": "^7.6.4",
     "@agentic/duck-duck-go": "^7.6.4",
+    "@agentic/searxng": "^7.6.4",
     "@ai-sdk/react": "^1.2.8",
     "@biomejs/biome": "^1.9.4",
     "@inkjs/ui": "^2.0.0",
@@ -65,6 +67,7 @@
     "dedent": "^1.5.3",
     "diff": "^7.0.0",
     "dotenv": "^16.4.7",
+    "duck-duck-scrape": "^2.2.7",
     "esbuild": "^0.25.2",
     "figures": "^6.1.0",
     "file-type": "^20.4.1",

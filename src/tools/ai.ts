@@ -1,9 +1,9 @@
 import type { ReactNode } from "react"
-import { type Tool, type ToolInvocation } from "ai"
+import { type JSONValue, type Tool, type ToolInvocation } from "ai"
 
 // TODO: annotate message with tool output params, eg file patch, useful for persistent chat messages.
 
-type Streamable = ReactNode | Promise<ReactNode>
+type Streamable = ReactNode | Promise<ReactNode> | JSONValue
 
 export type Renderer<T extends Array<any>> = (...args: T) => AsyncGenerator<Streamable, void, void>
 

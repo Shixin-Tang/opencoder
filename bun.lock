@@ -14,7 +14,9 @@
       },
       "devDependencies": {
         "@agentic/ai-sdk": "^7.6.4",
+        "@agentic/brave-search": "^7.6.4",
         "@agentic/duck-duck-go": "^7.6.4",
+        "@agentic/searxng": "^7.6.4",
         "@ai-sdk/react": "^1.2.8",
         "@biomejs/biome": "^1.9.4",
         "@inkjs/ui": "^2.0.0",
@@ -35,6 +37,7 @@
         "dedent": "^1.5.3",
         "diff": "^7.0.0",
         "dotenv": "^16.4.7",
+        "duck-duck-scrape": "^2.2.7",
         "esbuild": "^0.25.2",
         "figures": "^6.1.0",
         "file-type": "^20.4.1",
@@ -102,9 +105,13 @@
 
     "@agentic/ai-sdk": ["@agentic/ai-sdk@7.6.4", "", { "dependencies": { "@agentic/core": "7.6.4" }, "peerDependencies": { "ai": "^4.3.4" } }, "sha512-oloaxSxyK+RNyJphKPbqJxkXaF44RJ19syUUwmidkAK7jCXTWkoUghaZ4upoSsOXCWhig+be3YTngZ1qqMMVXg=="],
 
+    "@agentic/brave-search": ["@agentic/brave-search@7.6.4", "", { "dependencies": { "@agentic/core": "7.6.4", "ky": "^1.8.0" }, "peerDependencies": { "zod": "^3.24.2" } }, "sha512-6X4+J37bTP0stKIhfHM7WzoXgkTGlkoeHbN1n1nWjIwNLyqlqLlaQ0e0LWMSVa0i2vkHdE2cs4v9VB1kyp2EsQ=="],
+
     "@agentic/core": ["@agentic/core@7.6.4", "", { "dependencies": { "dedent": "^1.5.3", "delay": "^6.0.0", "jsonrepair": "^3.12.0", "ky": "^1.8.0", "openai-zod-to-json-schema": "^1.0.3", "p-throttle": "6.2.0", "type-fest": "^4.39.1", "zod-validation-error": "^3.4.0" }, "peerDependencies": { "zod": "^3.24.2" } }, "sha512-WlJGBRAf5IMhnkl2G/r/sfQ2ny8Gbmijkwyb7N6uMyiA5WqSaDW82udx/ATNUaREYhb+f6KZEm5qHxTMGHMY7w=="],
 
     "@agentic/duck-duck-go": ["@agentic/duck-duck-go@7.6.4", "", { "dependencies": { "@agentic/core": "7.6.4", "duck-duck-scrape": "^2.2.7", "string-strip-html": "^13.4.12" }, "peerDependencies": { "zod": "^3.24.2" } }, "sha512-0vzYjpuUSZIp5TDXxXQpqw2mTuXjIQRjF66s7rOUSUFXsGd4Im/zlgfArOklDRZ+BHxbU41vXCRJBb6HEd402A=="],
+
+    "@agentic/searxng": ["@agentic/searxng@7.6.4", "", { "dependencies": { "@agentic/core": "7.6.4", "ky": "^1.8.0" }, "peerDependencies": { "zod": "^3.24.2" } }, "sha512-koQBM3P2sxd52jfycmxJoF5ybqUVCCoeeInwGt6FpEu1Dpc9Mh78fxnZPlhd/FAP6MNaTNpYd0T+1jZF+yK8pw=="],
 
     "@ai-sdk/anthropic": ["@ai-sdk/anthropic@1.2.4", "", { "dependencies": { "@ai-sdk/provider": "1.1.0", "@ai-sdk/provider-utils": "2.2.3" }, "peerDependencies": { "zod": "^3.0.0" } }, "sha512-dAN6MXvLffeFVAr2gz3RGvOTgX1KL/Yn5q1l4/Dt0TUeDjQgCt4AbbYxZZB2qIAYzQvoyAFPhlw0sB3nNizG/g=="],
 
