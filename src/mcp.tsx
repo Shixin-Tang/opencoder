@@ -38,7 +38,7 @@ export async function playwright({
   return await client.tools()
 }
 
-export function webSearch({
+export async function webSearch({
   provider,
 }: {
   /**
@@ -49,7 +49,7 @@ export function webSearch({
    * - `searxng`: Uses SearxNG for the search. Requires SEARXNG_API_BASE_URL env
    */
   provider?: "duckduckgo" | "brave" | "searxng"
-} = {}): Record<string, CoderTool> {
+} = {}): Promise<Record<string, CoderTool>> {
   if (provider === "duckduckgo" || !provider) {
     return {
       search_web: {
