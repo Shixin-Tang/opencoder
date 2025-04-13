@@ -98,7 +98,6 @@
     "react-reconciler": "0.0.0-experimental-63779030-20250328",
     "safe-stringify": "^1.1.1",
     "semver": "^7.7.1",
-    "sinon": "^20.0.0",
     "source-map-support": "^0.5.21",
     "ts-pattern": "^5.7.0",
     "typescript": "^5",

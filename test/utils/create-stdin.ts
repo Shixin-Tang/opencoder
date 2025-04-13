@@ -1,21 +1,21 @@
 import { EventEmitter } from "node:events"
-import { spy, stub } from "sinon"
+import { vi } from "vitest"
 
 export const createStdin = () => {
   const stdin = new EventEmitter() as unknown as NodeJS.ReadStream
   stdin.isTTY = true
-  stdin.setRawMode = spy(() => stdin)
-  stdin.setEncoding = () => stdin
-  stdin.read = stub()
-  stdin.unref = () => stdin
-  stdin.ref = () => stdin
+  stdin.setRawMode = vi.fn(() => stdin)
+  stdin.setEncoding = vi.fn(() => stdin)
+  stdin.read = vi.fn()
+  stdin.unref = vi.fn(() => stdin)
+  stdin.ref = vi.fn(() => stdin)
   return stdin
 }
 
 export const emitReadable = (stdin: NodeJS.ReadStream, chunk: string) => {
-  const read = stdin.read as ReturnType<typeof stub>
-  read.onCall(0).returns(chunk)
-  read.onCall(1).returns(null)
+  const read = stdin.read as ReturnType<typeof vi.fn>
+  read.mockImplementationOnce(() => chunk)
+  read.mockImplementationOnce(() => null)
   stdin.emit("readable")
-  read.reset()
+  read.mockClear()
 }

@@ -48,36 +48,19 @@ test("simple chat", async () => {
   await waitNextRender()
   expect(fiber).toBeDefined()
   assert(stdin)
-  const tree = buildComponentTree(fiber!.current.child)
-  expect(stdout.get()).toMatchInlineSnapshot(`
-    "
-    ╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
-    │ >                                                                                                │
-    ╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
-      / for commands                                                     alt + ⏎ for newline ·0 tokens"
-  `)
+  expect(stdout.get()).toMatchSnapshot("simple chat initial")
 
   stdin.emit("input", "hello world")
   await waitNextRender()
   stdin.emit("input", "\r")
   await vi.waitFor(() => {
+    const tree = buildComponentTree(fiber!.current.child)
     return queryComponentTree(tree, "MessageChatMessage")
   })
   await waitNextRender()
   await delay(1000)
 
-  expect(stdout.get()).toMatchInlineSnapshot(`
-    "> hello world
-    ▼
-     ╭─────────────────────────────────────────────────────────────────────────────────────────────────╮
-     │Hello, world!                                                                                    │
-     ╰─────────────────────────────────────────────────────────────────────────────────────────────────╯
-
-    ╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
-    │ >                                                                                                │
-    ╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
-      / for commands                                                    alt + ⏎ for newline ·13 tokens"
-  `)
+  expect(stdout.get()).toMatchSnapshot("simple chat")
 
   instance.unmount()
 })

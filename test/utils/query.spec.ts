@@ -171,8 +171,6 @@ describe("queryComponentTree", () => {
 
   test("should find nested components correctly", () => {
     // Find the Text inside the first Button
-    const buttonText = queryComponentTree(mockTree, "Button > Text") // NOTE: Direct child selector '>' is NOT implemented yet
-    // This test would require enhancing parseSelector and findRecursive
 
     // For now, let's test finding a specific nested text directly
     const clickMeText = queryComponentTree(mockTree, 'Text[value="Click Me"]')

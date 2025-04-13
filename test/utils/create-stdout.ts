@@ -1,5 +1,5 @@
 import EventEmitter from "node:events"
-import { spy } from "sinon"
+import { vi } from "vitest"
 
 // Fake process.stdout
 type FakeStdout = {
@@ -10,10 +10,10 @@ const createStdout = (columns?: number): FakeStdout => {
   const stdout = new EventEmitter() as unknown as FakeStdout
   stdout.columns = columns ?? 100
 
-  const write = spy()
+  const write = vi.fn()
   stdout.write = write
 
-  stdout.get = () => write.lastCall.args[0] as string
+  stdout.get = () => write.mock.calls.at(-1)?.[0] as string
 
   return stdout
 }
