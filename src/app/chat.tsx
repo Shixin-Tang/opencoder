@@ -8,7 +8,7 @@ import { useChat } from "@ai-sdk/react"
 import type { LanguageModelUsage, ToolExecutionOptions, ToolSet } from "ai"
 import { appendResponseMessages, createDataStreamResponse, createIdGenerator, streamText } from "ai"
 import { createStreamableUI } from "ai/rsc"
-import { Box, Text, useInput } from "ink"
+import { Box, Text, useInput, useStdin } from "ink"
 import { useSetAtom } from "jotai"
 import React, { isValidElement, use, useEffect, useMemo, useRef, useState } from "react"
 import { AIInput } from "../components/ai-input.js"
@@ -62,6 +62,7 @@ const inStorageMessage = messageStorage.get<Message[]>("/messages").then((value)
 const toolsOutput = messageStorage.getItem("/tools")
 export function Chat() {
   const showDialog = useDialog()
+  const { stdin } = useStdin()
   const [error, setError] = useState<Error | null>(null)
   const { model, mcp: mcpTools, customTools, experimental } = useAppContext()
   const streamingToolUIRef = useRef<Record<string, React.ReactNode | null>>({})
@@ -195,9 +196,7 @@ export function Chat() {
       prefix: "msgc",
       size: 16,
     }),
-    onError: (error) => {
-      // console.error(error)
-    },
+    onError: (error) => {},
     fetch: (async (_, options) => {
       const body = JSON.parse(options?.body as string) as {
         messages: Message[]
@@ -259,7 +258,11 @@ export function Chat() {
               setError(error as Error)
             },
           })
-          stream.consumeStream()
+          stream.consumeStream({
+            onError: (error) => {
+              setError(error as Error)
+            },
+          })
           stream.mergeIntoDataStream(dataStream)
           // if (import.meta.env.DEV) {
           //   // workaround for a bug in development mode
@@ -292,7 +295,9 @@ export function Chat() {
           />,
         )
         setTimeout(() => {
-          console.log(instance.lastFrame())
+          if (import.meta.env.MODE !== "test") {
+            console.log(instance.lastFrame()!)
+          }
           instance.unmount()
         }, 10)
       }
@@ -321,16 +326,22 @@ export function Chat() {
           focus
         />
       </Box> */}
-      {status === "error" && !error && (
-        <Box borderStyle="round" borderColor="red" flexDirection="column" gap={1}>
-          <Text color="red">An error occurred while processing your request</Text>
-        </Box>
-      )}
-      {error && (
-        <Box borderStyle="round" borderColor="red" flexDirection="column" gap={1}>
+      {(status === "error" || error) && (
+        <Box
+          borderStyle="round"
+          borderColor="red"
+          flexDirection="column"
+          gap={1}
+          paddingX={1}
+          marginY={1}
+        >
           <Text color="red">An error occurred while processing your request:</Text>
-          <Text color="white">{error.message}</Text>
-          {error.message.match(/using the 'apiKey'/) && (
+          {error ? (
+            <Text color="white">{error.message}</Text>
+          ) : (
+            <Text color="gray">(No specific error details available)</Text>
+          )}
+          {error?.message.match(/using the 'apiKey'/) && (
             <Text color="white">
               <Text color="blue">Tips: </Text>
               you can set the API key to .env file

@@ -124,30 +124,107 @@ export const buildComponentTree = (fiber: Fiber) => {
 
   const traverse = (fiber: Fiber, parent?: ComponentTree) => {
     const displayName = getDisplayName(fiber.type) ?? "Unknown"
-    const target = parent?.children ?? result
-    const current = {
-      name: displayName,
-      props: mapValues(fiber.memoizedProps, (value) => {
-        if (isValidElement(value) || typeof value === "object" || typeof value === "function") {
-          return undefined
-        }
-        return value
-      }),
-      state: mapValues(fiber.memoizedState, (value) => {
-        if (isValidElement(value) || typeof value === "object" || typeof value === "function") {
-          return undefined
-        }
-        return value
-      }),
-      children: [],
-    } as ComponentTree
-    target.push(current)
 
-    if (fiber.child) traverse(fiber.child, current)
-    if (fiber.sibling) traverse(fiber.sibling, parent ?? current)
+    // Check if component name starts with "Internal"
+    const isInternalComponent = displayName.startsWith("Internal")
+
+    if (!isInternalComponent) {
+      // Only create and add component to tree if it's not an internal component
+      const target = parent?.children ?? result
+      const current = {
+        name: displayName,
+        props: mapValues(fiber.memoizedProps, (value) => {
+          if (isValidElement(value) || typeof value === "object" || typeof value === "function") {
+            return undefined
+          }
+          return value
+        }),
+        state: mapValues(fiber.memoizedState, (value) => {
+          if (isValidElement(value) || typeof value === "object" || typeof value === "function") {
+            return undefined
+          }
+          return value
+        }),
+        children: [],
+      } as ComponentTree
+      target.push(current)
+
+      // For non-internal components, traverse children with current as parent
+      if (fiber.child) traverse(fiber.child, current)
+      if (fiber.sibling) traverse(fiber.sibling, parent)
+    } else {
+      // For internal components, traverse children with the same parent
+      if (fiber.child) traverse(fiber.child, parent)
+      if (fiber.sibling) traverse(fiber.sibling, parent)
+    }
   }
 
   traverse(fiber)
 
   return result
+}
+
+// take a component tree and return a string visually representing the tree
+// for example, the tree:
+// <Root>
+//   <App state={{ name: "John" }}>
+//     <Box>
+//       <ink-box color="red">Hello</Text> // color="red" is a prop
+//     </Box>
+//   </App>
+// </Root>
+
+export const componentTreeToString = (tree: ComponentTree[]) => {
+  const result: string[] = []
+
+  const traverse = (node: ComponentTree, depth = 0) => {
+    const indent = "  ".repeat(depth)
+
+    // Format props
+    const propsStr = Object.entries(node.props || {})
+      .filter(([_, value]) => value !== undefined)
+      .map(([key, value]) => {
+        // Add prefix for numeric keys
+        const formattedKey = /^\d+$/.test(key) ? `_${key}` : key
+
+        if (
+          typeof value === "number" ||
+          typeof value === "boolean" ||
+          typeof value === "undefined"
+        ) {
+          return `${formattedKey}={${value}}`
+        }
+        return `${formattedKey}=${JSON.stringify(value)}`
+      })
+      .join(" ")
+
+    // Format state
+    const stateStr =
+      Object.keys(node.state || {}).length > 0 ? ` state=${JSON.stringify(node.state)}` : ""
+
+    // Create component string
+    const componentStr = `${indent}<${node.name}${propsStr ? " " + propsStr : ""}${stateStr}>`
+    result.push(componentStr)
+
+    // Traverse children
+    for (const child of node.children) {
+      traverse(child, depth + 1)
+    }
+
+    // Close tag if there were children
+    if (node.children.length > 0) {
+      result.push(`${indent}</${node.name}>`)
+    }
+  }
+
+  // Handle array of trees
+  if (Array.isArray(tree)) {
+    for (const node of tree) {
+      traverse(node)
+    }
+  } else {
+    traverse(tree)
+  }
+
+  return result.join("\n")
 }

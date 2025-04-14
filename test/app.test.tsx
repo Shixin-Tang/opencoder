@@ -6,13 +6,12 @@ import { createStore } from "jotai"
 import { EventEmitter } from "node:events"
 import { setImmediate } from "node:timers/promises"
 import React from "react"
-import { assert, expect, test, vi } from "vitest"
+
 import type { AppContextType } from "../src/app/context.js"
-import { buildComponentTree } from "./utils/debugger.js"
+import { buildComponentTree, componentTreeToString } from "./utils/debugger.js"
 import { delay } from "./utils/delay.js"
 import { spawnOpenCoder, waitNextRender } from "./utils/render.js"
 import { AppTestWrapper, createAppTestWrapper } from "./utils/wrapper.js"
-
 
 test("basic", async () => {
   let fiber: FiberRoot | undefined
@@ -26,14 +25,13 @@ test("basic", async () => {
   } satisfies AppContextType
   const { instance, stdin, stdout } = await createAppTestWrapper({ config, store, queryClient })
 
-
   expect(fiber).toBeDefined()
   assert(stdin)
   const tree = buildComponentTree(fiber!.current.child)
-  expect(JSON.stringify(tree)).toMatchSnapshot("basic component tree")
+  expect(componentTreeToString(tree)).toMatchSnapshot("basic component tree")
   expect(stdout.get()).toMatchSnapshot("basic initial")
 
-  stdin.emit("input", "hello world\r")
+  stdin.emit("input", "hello world")
   await waitNextRender()
   await vi.waitFor(
     () => {
@@ -42,8 +40,9 @@ test("basic", async () => {
     },
     { interval: 10 },
   )
-
-  expect(stdout.get()).toMatchSnapshot("basic enter hello world")
+  expect(componentTreeToString(buildComponentTree(fiber!.current.child))).toMatchSnapshot(
+    "basic enter hello world component tree",
+  )
 
   stdin.emit("input", ansiEscapes.cursorBackward(2))
   await waitNextRender()
