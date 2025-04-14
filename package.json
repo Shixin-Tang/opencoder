@@ -1,7 +1,7 @@
 {
   "name": "opencoder",
   "type": "module",
-  "version": "0.0.70",
+  "version": "0.0.71",
   "license": "Apache-2.0",
   "exports": {
     ".": {
@@ -26,7 +26,7 @@
   "scripts": {
     "dev": "vite-node --watch src/index.ts",
     "prepare": "bun scripts/patch.js",
-    "release-next": "oxlint && vitest run && tsc && bunx bumpp && bun run build && npm publish --tag next",
+    "release-next": "oxlint && vitest run && tsc && bunx bumpp && SOURCE_MAP=true bun run build && npm publish --tag next",
     "release-latest": "oxlint && vitest run && tsc && bunx bumpp && bun run build && npm publish",
     "build": "vite build --ssr",
     "test": "DEV=true vitest --watch",
