@@ -1,7 +1,6 @@
 import fs from "node:fs"
 import path from "node:path"
-import { defineConfig } from "vite"
-import dts from "vite-plugin-dts"
+import { defineConfig } from "rolldown-vite"
 import tsconfigPaths from "vite-tsconfig-paths"
 import babel from "vite-plugin-babel"
 
@@ -22,10 +21,22 @@ export default defineConfig({
       // "react/jsx-runtime": "react/jsx-runtime.js",
     },
   },
+  optimizeDeps: {
+    include: ["ink > cli-boxes"],
+    rollupOptions: {},
+  },
   build: {
+    // enableBuildReport: true,
     target: "esnext",
     minify: "esbuild",
-    sourcemap: process.env.VITEST ? false : true,
+    sourcemap: true,
+    commonjsOptions: {
+      include: ["cli-boxes"],
+      extensions: [".js", ".mjs"],
+      transformMixedEsModules: true,
+      strictRequires: ["cli-boxes"],
+      esmExternals: true,
+    },
     rollupOptions: {
       input: {
         cli: "./src/index.ts",
@@ -40,11 +51,14 @@ export default defineConfig({
         "@vscode/ripgrep",
         "@lancedb/lancedb",
         "unconfig",
+        "cli-boxes",
+        /node:/,
+        ...require("repl")._builtinLibs,
       ],
       output: {
         minifyInternalExports: false,
       },
-      onwarn(warning, warn) {
+      onwarn(warning: any, warn: any) {
         if (
           warning.code === "MODULE_LEVEL_DIRECTIVE" ||
           warning.code === "EVAL" ||
@@ -61,8 +75,6 @@ export default defineConfig({
   },
   plugins: [
     tsconfigPaths({ projects: [path.resolve(__dirname, "tsconfig.json")] }),
-    dts({ tsconfigPath: path.resolve(__dirname, "tsconfig.json") }),
-    // process.env.NODE_ENV === "production" &&
     (babel as any)({
       include: /\.tsx$/,
       babelConfig: {
@@ -81,9 +93,14 @@ export default defineConfig({
     {
       name: "write-headers",
       closeBundle() {
-        const cli = fs.readFileSync(path.resolve(__dirname, "dist/cli.js"), "utf-8")
-        fs.writeFileSync(path.resolve(__dirname, "dist/cli.js"), `#!/usr/bin/env node\n${cli}`)
+        setTimeout(() => {
+          const cli = fs.readFileSync(path.resolve(__dirname, "dist/cli.js"), "utf-8")
+          fs.writeFileSync(path.resolve(__dirname, "dist/cli.js"), `#!/usr/bin/env node\n${cli}`)
+        }, 10)
       },
     },
   ],
+  experimental: {
+    enableNativePlugin: true,
+  },
 })

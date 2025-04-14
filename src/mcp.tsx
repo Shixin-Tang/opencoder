@@ -12,7 +12,7 @@ import React from "react"
 export async function playwright({
   executablePath,
   runner,
-}: { executablePath?: string; runner?: "npx" | "bunx" } = {}) {
+}: { executablePath?: string; runner?: "npx" | "bunx" } = {}): Promise<Record<string, CoderTool>> {
   const getChromeExecutablePath = () => {
     if (process.platform === "win32") {
       return "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
@@ -130,7 +130,7 @@ export async function createMcp({
   name,
   command,
   args,
-}: { name: string; command: string; args: string[] }) {
+}: { name: string; command: string; args: string[] }): Promise<Record<string, CoderTool>> {
   const transport = new Experimental_StdioMCPTransport({
     command,
     args,

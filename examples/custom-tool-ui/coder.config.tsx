@@ -1,3 +1,4 @@
+// @ts-nocheck enable to ignore the errors from the opencoder package, you can safely remove this line
 import { z, React } from "opencoder"
 import { webSearch } from "opencoder/mcp"
 

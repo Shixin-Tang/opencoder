@@ -60,8 +60,8 @@ if (import.meta.env.PROD) {
   console.log(
     boxen(
       `Welcome to OpenCoder@${pkg.version}
-  Model: ${chalk.green(config.model?.modelId || "claude-3-5-sonnet-20241022")}
-  Working directory: ${chalk.green(env.cwd)}`,
+Model: ${chalk.green(config.model?.modelId || "claude-3-5-sonnet-20241022")}
+Working directory: ${chalk.green(env.cwd)}`,
       {
         padding: 1,
         borderColor: "green",

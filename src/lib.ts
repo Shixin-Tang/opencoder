@@ -1,6 +1,6 @@
 import globalCacheDir from "global-cache-dir"
 import type { LanguageModel, Tool, EmbeddingModel } from "ai"
-import { createStorage } from "unstorage"
+import { createStorage, type Storage } from "unstorage"
 import path from "node:path"
 import fsLiteDriver from "unstorage/drivers/fs-lite"
 import type { CoderTool } from "@/tools/ai.js"
@@ -11,8 +11,8 @@ export { createOpenAI, openai } from "@ai-sdk/openai"
 export { z } from "zod"
 export { default as React } from "react"
 
-const cacheDir = await globalCacheDir("OpenCoder")
-export const storage = createStorage({
+const cacheDir: string = (await globalCacheDir("OpenCoder")) as string
+export const storage: Storage = createStorage({
   driver: (fsLiteDriver as any)({ base: path.join(cacheDir, "general-cache") }),
 })
 
