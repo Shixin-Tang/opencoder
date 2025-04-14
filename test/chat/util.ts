@@ -5,8 +5,8 @@ import { onCommitFiberRoot, type FiberRoot } from "bippy"
 import { createStore } from "jotai"
 import { delay } from "../utils/delay.js"
 import { waitNextRender } from "../utils/render.js"
-import type { AppContextType } from "../../src/app/context"
-import { createAppTestWrapper } from "../utils/wrapper"
+import type { AppContextType } from "../../src/app/context.js"
+import { createAppTestWrapper } from "../utils/wrapper.js"
 
 export async function* simulateDelayedStream(
   chunks: LanguageModelV1StreamPart[],

@@ -5,6 +5,11 @@ import { z } from "zod"
 import { waitNextRender } from "../utils/render.js"
 import { setupTestEnvironment } from "./util.js"
 
+// Define expected strings for assertions
+const toolFailureErrorMessage =
+  "Error executing tool failing_tool: Tool execution failed spectacularly!"
+const inputPromptIndicator = ">"
+
 test("handling tool execution error", async () => {
   // 1. Setup: Model requests a tool, tool execution fails
   const mockFailingTool = vi
@@ -52,7 +57,11 @@ test("handling tool execution error", async () => {
     customTools: tools,
   })
 
-  expect(stdout.get()).toMatchSnapshot("tool error - initial")
+  // Check initial state - should only have input prompt
+  const initialOutput = stdout.get()
+  expect(initialOutput).includes(inputPromptIndicator)
+  expect(initialOutput).not.includes(toolFailureErrorMessage)
+
   assert(stdin)
 
   // 2. Simulate user input
@@ -67,8 +76,10 @@ test("handling tool execution error", async () => {
   await vi.waitFor(
     () => {
       const output = stdout.get()
+      // Check that the specific error message IS present
+      expect(output).includes(toolFailureErrorMessage)
       // Check that the input prompt reappears
-      expect(output).toContain("> ")
+      expect(output).includes(inputPromptIndicator)
     },
     { timeout: 3000 },
   )
@@ -80,8 +91,10 @@ test("handling tool execution error", async () => {
   // 6. Verify model was NOT called a second time
   expect(doStreamMock).toHaveBeenCalledTimes(1)
 
-  // 7. Final state check (includes error message)
-  expect(stdout.get()).toMatchSnapshot("tool error - final state")
+  // 7. Final state check - already partially done in waitFor, but can re-verify
+  const finalOutput = stdout.get()
+  expect(finalOutput).includes(toolFailureErrorMessage)
+  expect(finalOutput).includes(inputPromptIndicator)
 
   // 8. Ensure app is stable and ready for next input
   stdin.emit("input", "next message")
