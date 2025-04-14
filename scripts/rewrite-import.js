@@ -3,15 +3,6 @@ import { debug, stripExt } from "./utils"
 import * as OxcTypes from "@oxc-project/types"
 import MagicString from "magic-string"
 
-export type OxcImport = (
-  | OxcTypes.ImportDeclaration
-  | OxcTypes.ExportAllDeclaration
-  | OxcTypes.ExportNamedDeclaration
-) & {
-  source: OxcTypes.StringLiteral
-  shouldAddIndex?: boolean
-}
-
 export function filterImports(program) {
   return program.body.filter(
     (node) =>

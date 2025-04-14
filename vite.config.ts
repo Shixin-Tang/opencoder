@@ -29,7 +29,7 @@ export default defineConfig({
     // enableBuildReport: true,
     target: "esnext",
     minify: "esbuild",
-    sourcemap: true,
+    sourcemap: process.env.SOURCE_MAP === "true",
     commonjsOptions: {
       include: ["cli-boxes"],
       extensions: [".js", ".mjs"],

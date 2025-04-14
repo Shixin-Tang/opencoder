@@ -22,6 +22,7 @@ npx opencoder@next
 - Supports any LLM providers that the AI SDK supports (OpenAI, Anthropic, Google, etc.)
 - Cross-platform shell: which means supports Windows, Linux, and MacOS.
 - High performance: 60 FPS UI rendering, powered by React concurrent rendering, React Compiler
+- Add custom tools to OpenCoder in 1 step (with custom UI)
 
 ## Demo
 

@@ -68,7 +68,7 @@ export const AIInput = memo(({
   const [timer, setTimer] = useState(0)
   const { model, experimental } = useAppContext()
   const index = useMutation({
-    mutationFn: async ({}: {}) => {
+    mutationFn: async ({}: any) => {
       if (!experimental?.codeBaseIndex?.enabled) {
         throw new Error("Codebase indexing is not enabled")
       }
