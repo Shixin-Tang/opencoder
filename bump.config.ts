@@ -2,7 +2,7 @@ import { defineConfig } from "bumpp"
 
 export default defineConfig({
   tag: false,
-  push: true,
+  push: false,
   preid: "next",
   commit: true,
 })
