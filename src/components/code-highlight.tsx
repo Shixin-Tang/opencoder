@@ -11,8 +11,8 @@ type Props = {
 export function CodeHighlight({ code, language }: Props): React.ReactElement {
   const highlightedCode = useMemo(() => {
     try {
+      return highlight(code, { language })
       if (supportsLanguage(language)) {
-        return highlight(code, { language })
       } else {
         logError(
           `Language not supported while highlighting code, falling back to markdown: ${language}`,

@@ -11,15 +11,7 @@ export default defineConfig({
   },
   ssr: {
     noExternal: true,
-    resolve: {
-      // conditions: ["react-server"],
-      // externalConditions: ["node"],
-    },
-  },
-  resolve: {
-    alias: {
-      // "react/jsx-runtime": "react/jsx-runtime.js",
-    },
+    resolve: {},
   },
   optimizeDeps: {
     include: ["ink > cli-boxes"],
@@ -102,5 +94,6 @@ export default defineConfig({
   ],
   experimental: {
     enableNativePlugin: true,
+    skipSsrTransform: true,
   },
 })
