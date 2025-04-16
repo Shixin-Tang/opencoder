@@ -20,6 +20,14 @@ export type Config = {
   model?: LanguageModel
   mcp?: Promise<Record<string, CoderTool>>[]
   customTools?: Record<string, CoderTool>
+  /**
+   * Custom system prompt.
+   * Can be a string or a function that returns a string.
+   * Use {{ DEFAULT_PROMPT }} to include the default system prompt.
+   * @example 'Here is customized config'
+   * @example '{{ DEFAULT_PROMPT }}\nMake sure to .... '
+   */
+  system?: string
   experimental?: {
     codeBaseIndex?: {
       enabled?: boolean

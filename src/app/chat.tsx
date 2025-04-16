@@ -281,7 +281,7 @@ export function Chat() {
   // }, [])
 
   const loggedMessageIds = useRef<string[]>([])
-  const last5Messages = useMemo(() => messages.slice(-5), [messages])
+  const activeMessages = useMemo(() => messages.slice(-5), [messages])
 
   useEffect(() => {
     messages.slice(0, -5).forEach((message) => {
@@ -306,8 +306,8 @@ export function Chat() {
 
   return (
     <Box flexDirection="column" gap={0}>
-      {last5Messages.length > 0 &&
-        last5Messages.map((message, index) => {
+      {activeMessages.length > 0 &&
+        activeMessages.map((message, index) => {
           return (
             <ChatMessage
               key={message.id}
