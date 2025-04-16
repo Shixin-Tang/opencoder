@@ -28,6 +28,28 @@ export type Config = {
    * @example '{{ DEFAULT_PROMPT }}\nMake sure to .... '
    */
   system?: string
+  /**
+   * Tool confirmation settings
+   */
+  toolConfirmation?: {
+    /**
+     * Enable tool confirmation dialog
+     * @default true
+     */
+    enabled?: boolean
+    /**
+     * List of tools that should be auto-accepted without confirmation
+     * Set to true to auto-accept all tools
+     * @default []
+     */
+    autoAcceptTools?: string[] | true
+    /**
+     * List of bash commands that should be auto-accepted without confirmation
+     * Set to true to auto-accept all bash commands
+     * @default []
+     */
+    autoAcceptBashCommands?: string[] | true
+  }
   experimental?: {
     codeBaseIndex?: {
       enabled?: boolean

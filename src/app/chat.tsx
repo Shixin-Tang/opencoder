@@ -8,65 +8,21 @@ import { useChat } from "@ai-sdk/react"
 import type { LanguageModelUsage, ToolExecutionOptions, ToolSet } from "ai"
 import { appendResponseMessages, createDataStreamResponse, createIdGenerator, streamText } from "ai"
 import { createStreamableUI } from "ai/rsc"
-import { Box, Text, useInput, useStdin } from "ink"
-import { useSetAtom } from "jotai"
-import React, { isValidElement, use, useEffect, useMemo, useRef, useState } from "react"
+import { Box, Text } from "ink"
+import React, { isValidElement, useEffect, useMemo, useRef, useState } from "react"
 import { AIInput } from "../components/ai-input.js"
-import { Onboarding } from "../components/onboarding.js"
-import { dialogContentAtom, useDialog } from "../lib/store/dialog.js"
 import { staticRender } from "@/lib/static-renderer.js"
 import { inspect } from "node:util"
 import { anthropic } from "@ai-sdk/anthropic"
+import { useToolConfirmationWrapper } from "../lib/tool-confirmation-wrapper.js"
 
-function MyDialog() {
-  const setDialogContent = useSetAtom(dialogContentAtom)
-  const [counter, setCounter] = useState(0)
 
-  useInput((_, key) => {
-    const clearScreenAndResolve = () => {
-      process.stdout.write("\x1B[2J\x1B[3J\x1B[H", () => {
-        setDialogContent(undefined)
-      })
-    }
-    if (key.escape) {
-      clearScreenAndResolve()
-    }
-    if (key.return) {
-      clearScreenAndResolve()
-    }
-  })
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCounter((counter) => counter + 1)
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [])
-  return (
-    <Box flexDirection="column">
-      <Text color="white" backgroundColor="gray">
-        Example Dialog
-      </Text>
-      <Box padding={2} paddingTop={1} flexDirection="column" gap={1}>
-        <Text>
-          Hello
-          {counter}
-        </Text>
-        <Onboarding />
-      </Box>
-    </Box>
-  )
-}
 
-const inStorageMessage = messageStorage.get<Message[]>("/messages").then((value) => value || [])
-
-const toolsOutput = messageStorage.getItem("/tools")
 export function Chat() {
-  const showDialog = useDialog()
-  const { stdin } = useStdin()
   const [error, setError] = useState<Error | null>(null)
   const { model, mcp: mcpTools, customTools, experimental } = useAppContext()
   const streamingToolUIRef = useRef<Record<string, React.ReactNode | null>>({})
-  const inStoreTools = use(toolsOutput)
+  const { wrapToolExecution } = useToolConfirmationWrapper()
   const [usage, setUsage] = useState<LanguageModelUsage>({
     promptTokens: 0,
     completionTokens: 0,
@@ -149,30 +105,38 @@ export function Chat() {
               execute: async (args: any, toolExecution: ToolExecutionOptions) => {
                 const ui = createStreamableUI()
                 try {
-                  const result = generate(args, {
-                    ...toolExecution,
-                    model,
-                  })
+                  // Wrap the tool execution with confirmation dialog
+                  return await wrapToolExecution(
+                    key,
+                    args,
+                    toolExecution,
+                    async () => {
+                      const result = generate(args, {
+                        ...toolExecution,
+                        model,
+                      })
 
-                  streamingToolUIRef.current[toolExecution.toolCallId] = ui.value
+                      streamingToolUIRef.current[toolExecution.toolCallId] = ui.value
 
-                  let lastValue
-                  for await (const part of result) {
-                    if (isValidElement(part)) {
-                      ui.update(part)
-                    } else {
-                      lastValue = part
+                      let lastValue
+                      for await (const part of result) {
+                        if (isValidElement(part)) {
+                          ui.update(part)
+                        } else {
+                          lastValue = part
+                        }
+                      }
+
+                      // await messageStorage.setItem(
+                      //   `/tools/${toolExecution.toolCallId}`,
+                      //   render(<>{ui.value}</>).lastFrame()!,
+                      // )
+
+                      ui.done()
+
+                      return lastValue
                     }
-                  }
-
-                  // await messageStorage.setItem(
-                  //   `/tools/${toolExecution.toolCallId}`,
-                  //   render(<>{ui.value}</>).lastFrame()!,
-                  // )
-
-                  ui.done()
-
-                  return lastValue
+                  )
                 } catch (error: any) {
                   ui.error(error)
                   return `Error: ${error.toString()}`
@@ -188,7 +152,7 @@ export function Chat() {
     )
   }, [])
 
-  const { messages, input, handleInputChange, handleSubmit, setMessages, status, stop } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, status, stop } = useChat({
     // initialMessages: use(inStorageMessage),
     initialMessages: [],
     sendExtraMessageFields: true,
@@ -196,7 +160,7 @@ export function Chat() {
       prefix: "msgc",
       size: 16,
     }),
-    onError: (error) => {},
+    onError: () => {},
     fetch: (async (_, options) => {
       const body = JSON.parse(options?.body as string) as {
         messages: Message[]
@@ -232,7 +196,7 @@ export function Chat() {
             ),
             messages: [...body.messages],
             toolCallStreaming: true,
-            onFinish: async ({ response, usage, finishReason }) => {
+            onFinish: async ({ response, usage }) => {
               await messageStorage.setItem<Message[]>(
                 "/messages",
                 appendResponseMessages({
@@ -307,7 +271,7 @@ export function Chat() {
   return (
     <Box flexDirection="column" gap={0}>
       {activeMessages.length > 0 &&
-        activeMessages.map((message, index) => {
+        activeMessages.map((message) => {
           return (
             <ChatMessage
               key={message.id}
