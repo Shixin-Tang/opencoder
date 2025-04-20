@@ -13,31 +13,30 @@ export function App() {
 	const toolConfirmation = useAtomValue(toolConfirmationStateAtom)
 
 	return (
-    <Box flexDirection="column">
-      {/* <Gradient name="vice">
+  <Box flexDirection="column">
+    {/* <Gradient name="vice">
           <BigText text="opencoder" />
         </Gradient> */}
-      {dialogContent && (
-        <Box
-          flexDirection="column"
-          gap={2}
-          width={process.stdout.columns}
-          height={process.stdout.rows}
-          borderStyle="round"
-          borderColor="green"
-        >
-          {dialogContent}
-        </Box>
-      )}
-      {!dialogContent && !toolConfirmation.isOpen && (
-        <Box flexDirection="column" gap={2}>
-          <Text></Text>
-          {/* <Onboarding /> */}
-          {/* <Spinner /> */}
-          <Chat />
-        </Box>
-      )}
-      <ToolConfirmationDialog />
+    {dialogContent && (
+      <Box
+        flexDirection="column"
+        gap={2}
+        width={process.stdout.columns}
+        height={process.stdout.rows}
+        borderStyle="round"
+        borderColor="green"
+      >
+        {dialogContent}
+      </Box>
+    )}
+    <Box
+      flexDirection="column"
+      gap={2}
+      display={!dialogContent && !toolConfirmation.isOpen ? "flex" : "none"}
+    >
+      <Chat />
     </Box>
+    <ToolConfirmationDialog />
+  </Box>
 )
 }

@@ -35,5 +35,8 @@
     "outDir": "./dist",
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
-  }
+  },
+  "exclude": [
+    "fixtures"
+  ]
 }

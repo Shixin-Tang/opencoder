@@ -16,6 +16,7 @@ import { App } from "./app.js"
 import { AppProvider } from "./app/context.js"
 import "source-map-support/register"
 import React from "react"
+import { tools } from "./tools/tools.js"
 
 dotenv.config()
 

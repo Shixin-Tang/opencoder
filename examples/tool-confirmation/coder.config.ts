@@ -1,5 +1,4 @@
 import { z } from "opencoder"
-import type { Config } from "opencoder"
 
 export default {
   // Tool confirmation settings
@@ -32,4 +31,4 @@ export default {
       },
     },
   },
-} satisfies Config
+}

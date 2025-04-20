@@ -1,11 +1,11 @@
 import { Provider, createStore } from "jotai"
-import { App } from "../../src/app"
-import { AppContextType, AppProvider } from "../../src/app/context"
+import { App } from "../../src/app.js"
+import { type AppContextType, AppProvider } from "../../src/app/context.js"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import React from "react"
 import { EventEmitter } from "node:stream"
 import { useStdin } from "ink"
-import { spawnOpenCoder } from "./render"
+import { spawnOpenCoder } from "./render.js"
 import { vi } from "vitest"
 
 export async function createAppTestWrapper({

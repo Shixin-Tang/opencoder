@@ -53,15 +53,20 @@ export function useToolConfirmationWrapper() {
     toolName: string,
     toolArgs: any,
     toolExecution: ToolExecutionOptions,
-    executeFn: T
+    executeFn: T,
   ): Promise<ReturnType<T>> => {
-    // If tool should be auto-accepted, execute it directly
-    if (shouldAutoAccept(toolName)) {
+    if (import.meta.env.MODE === "test") {
+      // Bypass tool confirmation in test mode
       return executeFn()
     }
 
-    // Special handling for bash tool
+    if (toolName !== "bash") {
+      // only show confirmation for bash tool
+      return executeFn()
+    }
+
     if (toolName === "bash" && typeof toolArgs.command === "string") {
+      // Special handling for bash tool
       // Check if the bash command should be auto-accepted
       if (shouldAutoAccept(`bash:${toolArgs.command}`)) {
         return executeFn()
@@ -83,15 +88,16 @@ export function useToolConfirmationWrapper() {
         executeFn()
           .then(resolve)
           .catch(reject)
+          .finally(() => closeToolConfirmation())
       },
       // On cancel
       () => {
-        // Clear the console first to avoid flickering errors
-        console.clear()
         closeToolConfirmation()
         // Resolve with a cancellation message instead of rejecting with an error
-        resolve((`Tool execution cancelled by user: ${toolName}`) as any)
-      }
+        resolve(
+          `The user doesn't want to proceed with this tool use. The tool use was rejected (eg. if it was a file edit, the new_string was NOT written to the file). STOP what you are doing and wait for the user to tell you how to proceed.` as any,
+        )
+      },
     )
 
     return promise

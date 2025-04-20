@@ -97,6 +97,7 @@ export function Chat() {
     return Object.fromEntries(
       Object.entries(finalTools).map(([key, tool]) => {
         const generate = tool.tool.generate
+        const execute = tool.tool.execute
         if (typeof generate !== "undefined") {
           const newTool = {
             ...tool,
@@ -105,42 +106,56 @@ export function Chat() {
               execute: async (args: any, toolExecution: ToolExecutionOptions) => {
                 const ui = createStreamableUI()
                 try {
-                  // Wrap the tool execution with confirmation dialog
-                  return await wrapToolExecution(
-                    key,
-                    args,
-                    toolExecution,
-                    async () => {
-                      const result = generate(args, {
-                        ...toolExecution,
-                        model,
-                      })
+                  const result = await wrapToolExecution(key, args, toolExecution, async () => {
+                    const result = generate(args, {
+                      ...toolExecution,
+                      model,
+                    })
+                    streamingToolUIRef.current[toolExecution.toolCallId] = ui.value
 
-                      streamingToolUIRef.current[toolExecution.toolCallId] = ui.value
-
-                      let lastValue
-                      for await (const part of result) {
-                        if (isValidElement(part)) {
-                          ui.update(part)
-                        } else {
-                          lastValue = part
-                        }
+                    let lastValue
+                    for await (const part of result) {
+                      if (isValidElement(part)) {
+                        ui.update(part)
+                      } else {
+                        lastValue = part
                       }
-
-                      // await messageStorage.setItem(
-                      //   `/tools/${toolExecution.toolCallId}`,
-                      //   render(<>{ui.value}</>).lastFrame()!,
-                      // )
-
-                      ui.done()
-
-                      return lastValue
                     }
-                  )
+
+                    // await messageStorage.setItem(
+                    //   `/tools/${toolExecution.toolCallId}`,
+                    //   render(<>{ui.value}</>).lastFrame()!,
+                    // )
+
+                    ui.done()
+
+                    return lastValue
+                  })
+                  return result
                 } catch (error: any) {
+                  if (error instanceof Error) {
+                    setError(error)
+                  }
                   ui.error(error)
                   return `Error: ${error.toString()}`
                 }
+              },
+            },
+          } as ToolModule
+          return [key, newTool]
+        }
+        if (typeof execute !== "undefined") {
+          const newTool = {
+            ...tool,
+            tool: {
+              ...tool.tool,
+              execute: async (args: any, toolExecution: ToolExecutionOptions) => {
+                return await wrapToolExecution(key, args, toolExecution, async () => {
+                  const result = await execute(args, {
+                    ...toolExecution,
+                  })
+                  return result
+                })
               },
             },
           } as ToolModule
@@ -165,6 +180,7 @@ export function Chat() {
       const body = JSON.parse(options?.body as string) as {
         messages: Message[]
       }
+      setError(null)
       return createDataStreamResponse({
         execute: async (dataStream) => {
           // TODO make a wrapper for all tools to intercept the tool streaming results (to render to the UI)
@@ -196,7 +212,7 @@ export function Chat() {
             ),
             messages: [...body.messages],
             toolCallStreaming: true,
-            onFinish: async ({ response, usage }) => {
+            onFinish: async ({ response, usage, finishReason }) => {
               await messageStorage.setItem<Message[]>(
                 "/messages",
                 appendResponseMessages({
@@ -267,6 +283,7 @@ export function Chat() {
       }
     })
   }, [messages])
+
 
   return (
     <Box flexDirection="column" gap={0}>

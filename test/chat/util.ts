@@ -48,7 +48,6 @@ export function createMockModel(streamChunks: Array<any>) {
   })
 }
 
-// --- Helper Setup Function (Revised for flexibility) ---
 export async function setupTestEnvironment(
   configOverrides: Partial<AppContextType> = {},
   options: { streamChunks?: any[] } = {},

@@ -13,11 +13,13 @@ export type ToolModule = {
 }
 
 export const tools = Object.fromEntries(
-  Object.entries(import.meta.glob<ToolModule>("./*.tsx", { eager: true })).map(([path, module]) => {
-    const name = path.match(/\/([^/]+)\.tsx$/)?.[1]
-    if (!name) {
-      throw new Error(`Tool name not found for ${path}`)
-    }
-    return [name, module]
-  }),
+  Object.entries(import.meta.glob<ToolModule>("./*.tsx", { eager: true }))
+    .map(([path, module]) => {
+      const name = path.match(/\/([^/]+)\.tsx$/)?.[1]
+      if (!name) {
+        throw new Error(`Tool name not found for ${path}`)
+      }
+      return [name, module] as const
+    })
+    .filter(([_, module]) => module?.tool),
 )
