@@ -193,15 +193,20 @@ Important:
 - Never update git config`,
   parameters: z.strictObject({
     command: z.string().describe("The command to execute"),
-    timeout: z.number().optional().describe("Optional timeout in milliseconds (max 600000)"),
+    timeout: z
+      .number()
+      .optional()
+      .describe(
+        "Optional timeout in milliseconds (max 600000). Note: useful for checking long-running commands.",
+      ),
   }),
   // TODO handle persistent shell session (for example npm run dev)
   async *generate({ command, timeout }, { abortSignal }) {
     $.cd(env.cwd!)
     let cmd = $`bash -c ${command}`
-    // if (abortSignal) {
-    // 	cmd = cmd.signal(abortSignal as any)
-    // }
+    if (abortSignal) {
+      cmd = cmd.signal(abortSignal)
+    }
     if (timeout) {
       cmd = cmd.timeout(timeout)
     }

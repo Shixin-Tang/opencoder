@@ -22,12 +22,15 @@ export type Config = {
   customTools?: Record<string, CoderTool>
   /**
    * Custom system prompt.
-   * Can be a string or a function that returns a string.
    * Use {{ DEFAULT_PROMPT }} to include the default system prompt.
    * @example 'Here is customized config'
    * @example '{{ DEFAULT_PROMPT }}\nMake sure to .... '
    */
   system?: string
+  /**
+   * Custom system prompt for evaluate tool
+   */
+  evaluateSystem?: (context: string) => string
   /**
    * Tool confirmation settings
    */
@@ -51,6 +54,16 @@ export type Config = {
     autoAcceptBashCommands?: string[] | true
   }
   experimental?: {
+    // for custom models in Agent tool or switch-model tool
+    modelRegistry: Record<
+      string,
+      {
+        description: string
+        model: LanguageModel
+      }
+    >
+    // WIP: the ability to switch model in chat
+    switchModelTool?: boolean
     /**
      * Disable default coding guidelines from @src/lib/prompts.ts
      * @default false

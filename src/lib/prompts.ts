@@ -178,6 +178,11 @@ ${packageManager ? `Package manager: ${packageManager?.name}@${packageManager?.v
 
   <example>
   user: write tests for new feature
+  assistant: [uses grep and glob search tools to find where similar tests are defined, uses concurrent read file tool use blocks in one tool call to read relevant files at the same time, uses edit file tool to write new tests]
+  </example>
+
+  <example>
+  user: write tests for new feature
   assistant: [uses grep search tools to find where similar tests are defined, uses concurrent read file tool use blocks in one tool call to read relevant files at the same time, uses edit file tool to write new tests]
   </example>
 
