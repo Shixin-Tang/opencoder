@@ -1,8 +1,10 @@
 import { ChatMessage } from "@/app/chat-message.js"
 import { useAppContext } from "@/app/context.js"
 import { getSystemPrompt } from "@/lib/prompts.js"
+import { staticRender } from "@/lib/static-renderer.js"
 import { messageStorage } from "@/lib/storage.js"
 import { tools, type ToolModule } from "@/tools/tools.js"
+import { anthropic } from "@ai-sdk/anthropic"
 import type { Message } from "@ai-sdk/react"
 import { useChat } from "@ai-sdk/react"
 import type { LanguageModelUsage, ToolExecutionOptions, ToolSet } from "ai"
@@ -16,15 +18,22 @@ import {
 } from "ai"
 import { createStreamableUI } from "ai/rsc"
 import { Box, Text } from "ink"
-import React, { isValidElement, useEffect, useMemo, useRef, useState } from "react"
-import { AIInput } from "../components/ai-input.js"
-import { staticRender } from "@/lib/static-renderer.js"
 import { inspect } from "node:util"
-import { anthropic } from "@ai-sdk/anthropic"
+import React, {
+  cache,
+  isValidElement,
+  Suspense,
+  use,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
+import { AIInput } from "../components/ai-input.js"
 import { useToolConfirmationWrapper } from "../lib/tool-confirmation-wrapper.js"
-import type { Config } from "@/lib.js"
 
 
+const inStorageMessage = messageStorage.get<Message[]>("/messages").then((value) => value || [])
 
 export function Chat() {
   const [error, setError] = useState<Error | null>(null)
@@ -131,11 +140,6 @@ export function Chat() {
                       }
                     }
 
-                    // await messageStorage.setItem(
-                    //   `/tools/${toolExecution.toolCallId}`,
-                    //   render(<>{ui.value}</>).lastFrame()!,
-                    // )
-
                     ui.done()
 
                     return lastValue
@@ -163,6 +167,7 @@ export function Chat() {
                   const result = await execute(args, {
                     ...toolExecution,
                   })
+
                   return result
                 })
               },
@@ -176,9 +181,8 @@ export function Chat() {
     )
   }, [])
 
-  const { messages, input, handleInputChange, handleSubmit, status, stop } = useChat({
-    // initialMessages: use(inStorageMessage),
-    initialMessages: [],
+  const { messages, setMessages, input, handleInputChange, handleSubmit, status, stop } = useChat({
+    initialMessages: config.experimental?.persistentChat ? use(inStorageMessage) : [],
     sendExtraMessageFields: true,
     generateId: createIdGenerator({
       prefix: "msgc",
@@ -301,18 +305,35 @@ export function Chat() {
     })
   }, [messages])
 
+  useEffect(() => {
+    if (config.autoRunCommand) {
+      handleInputChange({
+        target: {
+          value: config.autoRunCommand,
+        },
+      } as React.ChangeEvent<HTMLInputElement>)
+    }
+  }, [config.autoRunCommand])
+
+  // const once = useRef(false)
+  // if (input.length > 0 && status === "ready" && !once.current && config.autoRunCommand) {
+  //   handleSubmit()
+  //   once.current = true
+  // }
 
   return (
     <Box flexDirection="column" gap={0}>
       {activeMessages.length > 0 &&
         activeMessages.map((message) => {
           return (
-            <ChatMessage
-              key={message.id}
-              message={message}
-              streamingToolUIRef={streamingToolUIRef}
-              tools={finalTools}
-            />
+            <Suspense fallback={null}>
+              <ChatMessage
+                key={message.id}
+                message={message}
+                streamingToolUIRef={streamingToolUIRef}
+                tools={finalTools}
+              />
+            </Suspense>
           )
         })}
       {/* <Box borderStyle="round" borderColor="gray">
@@ -359,21 +380,21 @@ export function Chat() {
         usage={usage}
         // TODO: add commands: /checkpoint, /revert, /commit, /mcp, /cost
         commands={[
-          // {
-          //   type: "prompt",
-          //   name: "test",
-          //   description: "test",
-          //   userFacingName: () => "test",
-          // },
           {
             name: "sync",
             description: "Sync codebase to the codebase index, stored in .coder/embeddings",
             userFacingName: () => "sync",
           },
+          {
+            name: "clear",
+            description: "Clear chat history",
+            userFacingName: () => "clear",
+          },
         ]}
         isDisabled={false}
         isLoading={status === "streaming" || status === "submitted"}
         messages={messages}
+        setMessages={setMessages}
         onSubmit={() => {
           handleSubmit()
         }}

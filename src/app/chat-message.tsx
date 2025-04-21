@@ -1,11 +1,33 @@
 import { applyMarkdown } from "@/lib/markdown.js"
+import { staticRender } from "@/lib/static-renderer.js"
+import { messageStorage } from "@/lib/storage.js"
 import type { CoderTool } from "@/tools/ai.js"
 import type { ToolModule } from "@/tools/tools.js"
 import type { Tool, UIMessage } from "ai"
 import figures from "figures"
 import { Box, Text } from "ink"
-import React from "react"
+import React, { cache, isValidElement, use, type ReactNode } from "react"
 import { match } from "ts-pattern"
+
+const tryReadMessageStore = cache((toolCallId: string) =>
+  messageStorage.getItem(`/tools/${toolCallId}`).then((v) => v && <Text>{v as string}</Text>),
+)
+
+const writeMessageStore = cache((toolCallId: string, ui: ReactNode) => {
+  const r = staticRender(
+    !isValidElement(ui) ? (
+      <Box>
+        <Text>{ui}</Text>
+      </Box>
+    ) : (
+      <Box>{ui}</Box>
+    ),
+  )
+  setTimeout(() => {
+    const f = r.lastFrame()
+    if (f) messageStorage.setItem(`/tools/${toolCallId}`, f)
+  }, 200)
+})
 
 export const ChatMessage = React.memo(function ({
   message,
@@ -30,15 +52,20 @@ export const ChatMessage = React.memo(function ({
         if (tool) {
           const streaming = streamingToolUIRef.current[part.toolInvocation.toolCallId]
           const ui =
-            part.toolInvocation.state === "partial-call"
+            use(tryReadMessageStore(part.toolInvocation.toolCallId)) ||
+            (part.toolInvocation.state === "partial-call"
               ? // prefer render over streaming during partial call
                 (tool.tool.render?.(part.toolInvocation) ?? streaming)
               : // prefer streaming over render during result
-                (streaming ?? tool.tool.render?.(part.toolInvocation))
+                (streaming ?? tool.tool.render?.(part.toolInvocation)))
           const title = tool.tool.renderTitle?.(part.toolInvocation)
           const icon = match(part.toolInvocation.toolName)
             .with("bash", () => <Text>$</Text>)
             .otherwise(() => <Text>{figures.triangleDown}</Text>)
+
+          if (part.toolInvocation.state === "result")
+            writeMessageStore(part.toolInvocation.toolCallId, ui as ReactNode)
+
           return (
             <Box key={`${message.id}-${partIndex}`} flexDirection="column" gap={0}>
               <Box flexDirection="row" gap={1}>
@@ -46,8 +73,7 @@ export const ChatMessage = React.memo(function ({
                 <Text> {title}</Text>
               </Box>
               <Box marginLeft={1} borderStyle="round" flexDirection="column" gap={0}>
-                {/* {part.toolInvocation.toolName === "write-file" ? <TestDiff /> : ui} */}
-                {ui}
+                {ui as ReactNode}
                 {!streaming &&
                   !tool.tool.render &&
                   part.toolInvocation.state === "result" &&

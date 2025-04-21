@@ -52,13 +52,13 @@ dotenv.config()
 
 ensureGitIgnore()
 
-if (process.argv.includes("init")) {
+const [command] = process.argv.slice(2)
+if (command === "init") {
   await initConfig()
 
   process.exit(0)
 }
 
-console.log()
 
 if (import.meta.env.PROD) {
   console.log(
@@ -83,6 +83,7 @@ const app = render(
         {...config}
         mcp={await Promise.all(config.mcp || [])}
         customTools={config.customTools || {}}
+        autoRunCommand={command}
       >
         <App />
       </AppProvider>

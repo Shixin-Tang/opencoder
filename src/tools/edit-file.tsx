@@ -103,9 +103,6 @@ ${addLineNumbers({
       }
       const { patch } = applyEdit(filePath, oldString, newString)
 
-      // TODO write once
-      messageStorage.setItem(`patch/${toolCallId}`, JSON.stringify(patch))
-
       return <FileContentDiff filePath={filePath} structuredPatch={patch} verbose={false} />
     } catch (error: any) {
       return null

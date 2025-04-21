@@ -6,6 +6,7 @@ import type { CoderTool } from "@/tools/ai.js"
 
 export type AppContextType = Omit<Config, "mcp"> & {
   mcp: Record<string, CoderTool>[]
+  autoRunCommand?: string
 }
 
 const AppContext = createContext<AppContextType>(null!)

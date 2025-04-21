@@ -81,9 +81,9 @@ OpenCoder has a cross-platform shell that supports Windows, Linux, and MacOS. Po
 
 - [ ] More commands (/checkpoint, /revert, /commit, /mcp, /cost)
 - [ ] Documentation
-- [ ] Persistent chat history
 - [ ] Add auto-import MCP tools from `.vscode/mcp.json` or `.cursorrules/mcp.json`
 - [ ] Proper release process (changeset + changelog)
+- [x] Persistent chat history
 - [x] Add more tests
 - [x] Add more examples
 - [x] Tool confirmation dialog

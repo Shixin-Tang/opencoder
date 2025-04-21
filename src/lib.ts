@@ -55,7 +55,7 @@ export type Config = {
   }
   experimental?: {
     // for custom models in Agent tool or switch-model tool
-    modelRegistry: Record<
+    modelRegistry?: Record<
       string,
       {
         description: string
@@ -64,6 +64,8 @@ export type Config = {
     >
     // WIP: the ability to switch model in chat
     switchModelTool?: boolean
+    // enable persistent
+    persistentChat?: boolean
     /**
      * Disable default coding guidelines from @src/lib/prompts.ts
      * @default false

@@ -1,4 +1,12 @@
+import { messageStorage } from "@/lib/storage.js"
 import { useState } from "react"
+
+let history = [] as string[]
+messageStorage.get("/history").then((v) => {
+  history = v as string[]
+})
+
+let timeout: NodeJS.Timeout
 
 export function useArrowKeyHistory(
   onSetInput: (value: string, mode: "bash" | "prompt") => void,
@@ -12,11 +20,17 @@ export function useArrowKeyHistory(
       const mode = "prompt"
       const value = input
       onSetInput(value, mode)
+      clearTimeout(timeout)
+      timeout = setTimeout(() => {
+        messageStorage.get("/history").then((v) => {
+          history = v as string[]
+        })
+      }, 0)
     }
   }
 
   function onHistoryUp() {
-    const latestHistory = [] as string[] //fixme
+    const latestHistory = history
     if (historyIndex < latestHistory.length) {
       if (historyIndex === 0 && currentInput.trim() !== "") {
         setLastTypedInput(currentInput)
@@ -28,7 +42,7 @@ export function useArrowKeyHistory(
   }
 
   function onHistoryDown() {
-    const latestHistory = [] as string[] //fixme
+    const latestHistory = history
     if (historyIndex > 1) {
       const newIndex = historyIndex - 1
       setHistoryIndex(newIndex)

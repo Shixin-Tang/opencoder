@@ -9,11 +9,12 @@ import { getTheme } from "@/lib/theme.js"
 import { defineTool } from "@/tools/ai.js"
 import { DefaultRejectedMessage } from "@/tools/shared/fallback-rejected-message.js"
 import { type ToolMetadata } from "@/tools/tools.js"
+import type { Hunk } from "diff"
 import { Box, Text } from "ink"
 import { existsSync, mkdirSync, readFileSync } from "node:fs"
 import { writeFile } from "node:fs/promises"
 import { dirname, extname, isAbsolute, relative, resolve } from "node:path"
-import React from "react"
+import React, { cache } from "react"
 import { z } from "zod"
 
 export const metadata = {
@@ -119,8 +120,7 @@ ${addLineNumbers({
     if (patch.length === 0) {
       return null
     }
-    // TODO write once
-    messageStorage.setItem(`patch/${toolCallId}`, JSON.stringify(patch))
+    
     return <StructuredDiff patch={patch[0]!} dim={false} width={process.stdout.columns - 10} />
   },
   renderTitle: ({ args }) => (
