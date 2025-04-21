@@ -1,19 +1,19 @@
+import type { AppContextType } from "@/app/context.js"
 import { env } from "@/lib/env.js"
+import lancedb from "@lancedb/lancedb"
+import { embed, type EmbeddingModel } from "ai"
 import { $ } from "dax-sh"
-import { readFileSync } from "node:fs"
 import dedent from "dedent"
 import { globby } from "globby"
-import { config } from "@/lib/config.js"
-import { detect } from "package-manager-detector/detect"
-import { P } from "ts-pattern"
-import { match } from "ts-pattern"
+import { readFileSync } from "node:fs"
 import path from "node:path"
-import lancedb from "@lancedb/lancedb"
-import { embed, type EmbeddingModel, type LanguageModel } from "ai"
+import { detect } from "package-manager-detector/detect"
+import { match, P } from "ts-pattern"
 export const INTERRUPT_MESSAGE = "[Request interrupted by user]"
 export const INTERRUPT_MESSAGE_FOR_TOOL_USE = "[Request interrupted by user for tool use]"
 
 export async function getSystemPrompt(
+  config: AppContextType,
   lastMessage: string,
   codeBaseIndexEnabled: boolean,
   embeddingModel?: EmbeddingModel<any>,
@@ -210,7 +210,10 @@ ${packageManager ? `Package manager: ${packageManager?.name}@${packageManager?.v
 
   NEVER commit changes unless the user explicitly asks you to. It is VERY IMPORTANT to only commit when explicitly asked, otherwise the user will feel that you are being too proactive.
 
-  # Coding guidelines
+  ${
+    config.experimental?.disableDefaultGuidelines
+      ? ""
+      : dedent`# Coding guidelines
   ALWAYS generate responsive designs.
   Use toasts components to inform the user about important events.
   ALWAYS try to use the shadcn/ui library.
@@ -229,6 +232,8 @@ ${packageManager ? `Package manager: ${packageManager?.name}@${packageManager?.v
   Do not hesitate to extensively use console logs to follow the flow of the code. This will be very helpful when debugging.
   DO NOT OVERENGINEER THE CODE. You take great pride in keeping things simple and elegant. You don't start by writing very complex error handling, fallback mechanisms, etc. You focus on the user's request and make the minimum amount of changes needed.
   DON'T DO MORE THAN WHAT THE USER ASKS FOR.
+  `
+  }
 
   # Tool usage policy
   - When doing file search, prefer to use the Agent tool in order to reduce context usage.
@@ -242,8 +247,8 @@ IMPORTANT: Before you begin work, think about what the code you're editing is su
 
   const systemPrompt = match(config.system)
     .with(undefined, () => defaultSystemPrompt)
-    .with(P.string.includes('{{ DEFAULT_PROMPT }}'), (system) =>
-      system.replace('{{ DEFAULT_PROMPT }}', defaultSystemPrompt)
+    .with(P.string.includes("{{ DEFAULT_PROMPT }}"), (system) =>
+      system.replace("{{ DEFAULT_PROMPT }}", defaultSystemPrompt),
     )
     .otherwise((system) => system)
   return systemPrompt

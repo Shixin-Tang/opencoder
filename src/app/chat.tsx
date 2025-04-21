@@ -15,12 +15,14 @@ import { staticRender } from "@/lib/static-renderer.js"
 import { inspect } from "node:util"
 import { anthropic } from "@ai-sdk/anthropic"
 import { useToolConfirmationWrapper } from "../lib/tool-confirmation-wrapper.js"
+import type { Config } from "@/lib.js"
 
 
 
 export function Chat() {
   const [error, setError] = useState<Error | null>(null)
-  const { model, mcp: mcpTools, customTools, experimental } = useAppContext()
+  const config = useAppContext()
+  const { model, mcp: mcpTools, customTools, experimental } = config
   const streamingToolUIRef = useRef<Record<string, React.ReactNode | null>>({})
   const { wrapToolExecution } = useToolConfirmationWrapper()
   const [usage, setUsage] = useState<LanguageModelUsage>({
@@ -206,6 +208,7 @@ export function Chat() {
             },
             abortSignal: options!.signal!,
             system: await getSystemPrompt(
+              config,
               body.messages.at(-1)?.content || "",
               experimental?.codeBaseIndex?.enabled || false,
               experimental?.codeBaseIndex?.model,

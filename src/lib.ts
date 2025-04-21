@@ -51,6 +51,12 @@ export type Config = {
     autoAcceptBashCommands?: string[] | true
   }
   experimental?: {
+    /**
+     * Disable default coding guidelines from @src/lib/prompts.ts
+     * @default false
+     */
+    disableDefaultGuidelines?: boolean
+
     codeBaseIndex?: {
       enabled?: boolean
       model?: EmbeddingModel<any>
