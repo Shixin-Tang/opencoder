@@ -200,14 +200,18 @@ export function Chat() {
             }
           }, 50)
 
+          const model2 = model || anthropic("claude-3-5-sonnet-20241022")
           const stream = streamText({
             tools: Object.fromEntries(
               Object.entries(finalTools).map(([key, value]) => [key, value.tool]),
             ) as ToolSet,
             maxSteps: 50,
             model: wrapLanguageModel({
-              model: model || anthropic("claude-3-5-sonnet-20241022"),
-              middleware: simulateStreamingMiddleware(),
+              model: model2,
+              middleware:
+                model2.provider === "ollama.chat" || model2.provider === "lmstudio.chat"
+                  ? simulateStreamingMiddleware()
+                  : [],
             }),
             temperature: 1,
             // maxTokens: 10e3,
