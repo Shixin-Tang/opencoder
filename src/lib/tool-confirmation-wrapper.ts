@@ -77,6 +77,7 @@ export function useToolConfirmationWrapper() {
     const { promise, resolve, reject } = createResolvablePromise<ReturnType<T>>()
 
     // Show the confirmation dialog
+    console.clear()
     showToolConfirmation(
       toolName,
       toolArgs,

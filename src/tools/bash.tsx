@@ -9,44 +9,41 @@ import { z } from "zod"
 
 const MAX_OUTPUT_LENGTH = 30000
 const BANNED_COMMANDS = [
-	"alias",
-	"curl",
-	"curlie",
-	"wget",
-	"axel",
-	"aria2c",
-	"nc",
-	"telnet",
-	"lynx",
-	"w3m",
-	"links",
-	"httpie",
-	"xh",
-	"http-prompt",
-	"chrome",
-	"firefox",
-	"safari",
+  "alias",
+  "curl",
+  "curlie",
+  "wget",
+  "axel",
+  "aria2c",
+  "nc",
+  "telnet",
+  "lynx",
+  "w3m",
+  "links",
+  "httpie",
+  "xh",
+  "http-prompt",
+  "chrome",
+  "firefox",
+  "safari",
 ]
 
 function concatenate(uint8arrays: Uint8Array[]) {
-	const totalLength = uint8arrays.reduce(
-		(total, uint8array) => total + uint8array.byteLength,
-		0,
-	)
+  const totalLength = uint8arrays.reduce((total, uint8array) => total + uint8array.byteLength, 0)
 
-	const result = new Uint8Array(totalLength)
+  const result = new Uint8Array(totalLength)
 
-	let offset = 0
-	uint8arrays.forEach((uint8array) => {
-		result.set(uint8array, offset)
-		offset += uint8array.byteLength
-	})
+  let offset = 0
+  uint8arrays.forEach((uint8array) => {
+    result.set(uint8array, offset)
+    offset += uint8array.byteLength
+  })
 
-	return result
+  return result
 }
 
 export const metadata = {
-	needsPermissions: () => false,
+  needsPermissions: () => false,
 } satisfies ToolMetadata
 
 export const tool = defineTool({
@@ -220,11 +217,14 @@ Important:
     }
     yield new TextDecoder().decode(out)
   },
-  renderTitle: ({ args }) => <Text>{args.command}</Text>,
+  renderTitle: ({ state, ...others }) => {
+    if (others?.args?.command) return <Text>{others?.args?.command}</Text>
+    return null
+  },
 })
 
 export function render() {
-	return <Text>Run Command</Text>
+  return <Text>Run Command</Text>
 }
 
 export const renderRejectedMessage = DefaultRejectedMessage

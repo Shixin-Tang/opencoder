@@ -6,7 +6,14 @@ import { tools, type ToolModule } from "@/tools/tools.js"
 import type { Message } from "@ai-sdk/react"
 import { useChat } from "@ai-sdk/react"
 import type { LanguageModelUsage, ToolExecutionOptions, ToolSet } from "ai"
-import { appendResponseMessages, createDataStreamResponse, createIdGenerator, streamText } from "ai"
+import {
+  appendResponseMessages,
+  createDataStreamResponse,
+  createIdGenerator,
+  simulateStreamingMiddleware,
+  streamText,
+  wrapLanguageModel,
+} from "ai"
 import { createStreamableUI } from "ai/rsc"
 import { Box, Text } from "ink"
 import React, { isValidElement, useEffect, useMemo, useRef, useState } from "react"
@@ -198,7 +205,10 @@ export function Chat() {
               Object.entries(finalTools).map(([key, value]) => [key, value.tool]),
             ) as ToolSet,
             maxSteps: 50,
-            model: model || anthropic("claude-3-5-sonnet-20241022"),
+            model: wrapLanguageModel({
+              model: model || anthropic("claude-3-5-sonnet-20241022"),
+              middleware: simulateStreamingMiddleware(),
+            }),
             temperature: 1,
             // maxTokens: 10e3,
             providerOptions: {
@@ -237,7 +247,7 @@ export function Chat() {
                 // workaround for a bug in development mode
                 // console.clear()
               }
-              // console.error(error)
+              if (process.env.DEBUG === "true") console.log(error)
               setError(error as Error)
             },
           })
