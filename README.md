@@ -70,6 +70,7 @@ OpenCoder has a cross-platform shell that supports Windows, Linux, and MacOS. Po
 - Memory read
 - Planning
 - Grep: powered by @vscode/ripgrep
+- Check diagnostics (currently only Typescript is supported)
 
 
 ## Available MCP tools
