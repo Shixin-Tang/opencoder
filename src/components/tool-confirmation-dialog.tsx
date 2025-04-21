@@ -56,52 +56,42 @@ export function ToolConfirmationDialog() {
       padding={1}
     >
       <Box flexDirection="column" gap={1}>
-        <Text bold color="yellow">Tool Confirmation Required</Text>
+        <Text bold color="yellow">
+          Tool Confirmation Required
+        </Text>
         <Text>Do you want to run the following tool?</Text>
         <Box flexDirection="column" marginY={1} paddingX={2}>
-          <Text bold color="green">{state.toolName}</Text>
+          <Text bold color="green">
+            {state.toolName}
+          </Text>
           <Text color="gray">Arguments:</Text>
           <Box paddingLeft={2}>
             <Text>{formattedArgs}</Text>
           </Box>
         </Box>
-        <Box marginTop={1} justifyContent="center" gap={4}>
-          {selectedButton === 'cancel' && (
+        <Box marginTop={1} justifyContent="center" gap={4} flexDirection="row">
+          {selectedButton === "cancel" && (
             <>
-            <Text
-            backgroundColor="red"
-            color="white"
-            bold
-          >
-            [Cancel]
-          </Text>
-          <Text
-            color="green"
-            bold
-          >
-            [Confirm]
-          </Text>
-          </>
+              <Text backgroundColor="red" color="white" bold>
+                [Cancel]
+              </Text>
+              <Text color="green" bold>
+                [Confirm]
+              </Text>
+            </>
           )}
-          {selectedButton === 'confirm' && (
+          {selectedButton === "confirm" && (
             <>
-            <Text
-            color="red"
-            bold
-          >
-            [Cancel]
-          </Text>
-          <Text
-            backgroundColor="green"
-            color="white"
-            bold
-          >
-            [Confirm]
-          </Text>
-          </>
+              <Text color="red" bold>
+                [Cancel]
+              </Text>
+              <Text backgroundColor="green" color="white" bold>
+                [Confirm]
+              </Text>
+            </>
           )}
         </Box>
-        <Box marginTop={1} justifyContent="center">
+        <Box marginTop={1} justifyContent="center" flexDirection="row">
           <Text color="gray" italic>
             Use ← → arrow keys to navigate, Enter to select
           </Text>

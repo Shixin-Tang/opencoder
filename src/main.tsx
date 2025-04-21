@@ -17,6 +17,7 @@ import { AppProvider } from "./app/context.js"
 import "source-map-support/register"
 import React from "react"
 import { tools } from "./tools/tools.js"
+import { setTimeout } from "node:timers/promises"
 
 dotenv.config()
 
@@ -57,6 +58,8 @@ if (process.argv.includes("init")) {
   process.exit(0)
 }
 
+console.log()
+
 if (import.meta.env.PROD) {
   console.log(
     boxen(
@@ -71,6 +74,7 @@ Working directory: ${chalk.green(env.cwd)}`,
     ),
   )
 }
+
 const store = createStore()
 const app = render(
   <Provider store={store}>

@@ -51,6 +51,7 @@ export function useToolConfirmation() {
   
   // Function to close the tool confirmation dialog
   const closeToolConfirmation = () => {
+    console.clear()
     setState(initialState)
   }
   
