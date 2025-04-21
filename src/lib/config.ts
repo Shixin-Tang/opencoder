@@ -29,13 +29,17 @@ import { createJiti } from "jiti"
 
 const jiti = createJiti(import.meta.url, {
   interopDefault: true,
+  // fsCache: false,
+  // moduleCache: false,
 })
 
 const loadConfig = (path: string) => {
   return jiti
     .import<{ default: Config }>(resolve(env.cwd, path))
     .then((e) => e.default)
-    .catch(() => false)
+    .catch((e) => {
+      return false
+    })
 }
 
 export const config = ((await loadConfig(`${env.cwd}/coder.config.ts`)) ||

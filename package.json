@@ -33,7 +33,7 @@
     "fmt": "biome format --write",
     "up": "bunx taze"
   },
-  "keywords": ["claude-code", "open coder", "claude code", "coding agent"],
+  "keywords": ["claude-code", "open coder", "claude code", "coding agent", "lovable", "bolt.new"],
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.10",
     "@ai-sdk/google": "^1.2.11",
