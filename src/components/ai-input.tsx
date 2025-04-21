@@ -200,10 +200,11 @@ export const AIInput = memo(
           finalInput = finalInput.replace(pastedPrompt, pastedText)
         }
       }
-      await messageStorage.setItem("/history", [
-        ...((await messageStorage.getItem<string[]>("/history")) || []),
-        input,
-      ])
+      import.meta.env.MODE !== "test" &&
+        (await messageStorage.setItem("/history", [
+          ...((await messageStorage.getItem<string[]>("/history")) || []),
+          input,
+        ]))
       onInputChange("")
       clearSuggestions()
       setPastedText(null)

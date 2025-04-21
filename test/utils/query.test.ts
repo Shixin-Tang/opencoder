@@ -1,6 +1,6 @@
 import { expect, test, describe } from "vitest"
-import type { ComponentTree } from "./debugger" // Import the type
-import { queryComponentTree } from "./query"
+import type { ComponentTree } from "./debugger.js" // Import the type
+import { queryComponentTree } from "./query.js"
 
 // Updated mock data reflecting ComponentTree[] structure
 const mockTree: ComponentTree[] = [
