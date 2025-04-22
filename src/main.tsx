@@ -21,7 +21,6 @@ import { setTimeout } from "node:timers/promises"
 
 dotenv.config()
 
-
 /* class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
   constructor(props: { children: React.ReactNode }) {
     super(props)
@@ -58,7 +57,6 @@ if (command === "init") {
 
   process.exit(0)
 }
-
 
 if (import.meta.env.PROD) {
   console.log(

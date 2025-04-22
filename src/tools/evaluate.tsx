@@ -32,7 +32,7 @@ Usage notes:
 4. IMPORTANT: The agent can not use bash tool, file-edit tool, file-write tool, so can not modify files. If you want to use these tools, use them directly instead of going through the agent.
 5. Choose model to use, depends on the complexity and its description, here are available models: ${[
     ...Object.keys(config.experimental?.modelRegistry || {}).map(
-      (key) => `${key} (${config.experimental?.modelRegistry[key]?.description})`,
+      (key) => `${key} (${config.experimental?.modelRegistry?.[key]?.description})`,
     ),
     "default",
   ].join(", ")}
@@ -56,7 +56,7 @@ Usage notes:
     const { textStream } = streamText({
       maxSteps: 10,
       model:
-        config.experimental?.modelRegistry[model]?.model ||
+        config.experimental?.modelRegistry?.[model]?.model ||
         config.model ||
         anthropic("claude-3-7-sonnet-20250219"),
       system:
@@ -105,8 +105,7 @@ Here is the context for the task: ${context}
     yield `Here is my evaluation: ${fullText}`
   },
   renderTitle: ({ state, ...others }) => {
-    if (others?.args?.command) return <Text>{others?.args?.command}</Text>
-    return null
+    return <Text>Evalulate</Text>
   },
 })
 

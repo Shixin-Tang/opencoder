@@ -6,6 +6,7 @@ import fsLiteDriver from "unstorage/drivers/fs-lite"
 import type { CoderTool } from "@/tools/ai.js"
 
 export { anthropic, createAnthropic } from "@ai-sdk/anthropic"
+export { createOpenAICompatible } from "@ai-sdk/openai-compatible"
 export { createGoogleGenerativeAI, google } from "@ai-sdk/google"
 export { createOpenAI, openai } from "@ai-sdk/openai"
 export { z } from "zod"
@@ -62,10 +63,16 @@ export type Config = {
         model: LanguageModel
       }
     >
+
     // WIP: the ability to switch model in chat
     switchModelTool?: boolean
+
     // enable persistent
     persistentChat?: boolean
+
+    // diagnostics tool, enabled by default
+    diagnosticsTool?: boolean
+
     /**
      * Disable default coding guidelines from @src/lib/prompts.ts
      * @default false

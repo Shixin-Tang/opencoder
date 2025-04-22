@@ -5,8 +5,13 @@ import { defineTool } from "@/tools/ai.js"
 import { DefaultRejectedMessage } from "@/tools/shared/fallback-rejected-message.js"
 import { z } from "zod"
 import { isTypeScriptProject, getTypeScriptDiagnostics } from "@/lib/typescript.js"
+import { config } from "@/lib/config.js"
 
 export const registerDiagnosticsTool = async () => {
+  if (config.experimental?.diagnosticsTool === false) {
+    return null
+  }
+
   const { isTypeScript, tsconfigPaths } = await isTypeScriptProject()
 
   if (!isTypeScript) {
