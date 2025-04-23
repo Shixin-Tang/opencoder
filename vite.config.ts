@@ -1,4 +1,5 @@
 import fs from "node:fs"
+import { dts } from "rolldown-plugin-dts"
 import path from "node:path"
 import { defineConfig } from "rolldown-vite"
 import tsconfigPaths from "vite-tsconfig-paths"
@@ -34,6 +35,7 @@ export default defineConfig({
         cli: "./src/index.ts",
         lib: "./src/lib.ts",
         mcp: "./src/mcp.tsx",
+        core: "./src/core.tsx",
       },
       external: [
         "ai",
@@ -66,6 +68,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    // dts(),
     tsconfigPaths({ projects: [path.resolve(__dirname, "tsconfig.json")] }),
     (babel as any)({
       include: /\.tsx$/,

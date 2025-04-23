@@ -32,7 +32,6 @@ import React, {
 import { AIInput } from "../components/ai-input.js"
 import { useToolConfirmationWrapper } from "../lib/tool-confirmation-wrapper.js"
 
-
 const inStorageMessage = messageStorage.get<Message[]>("/messages").then((value) => value || [])
 
 export function Chat() {

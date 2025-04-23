@@ -4,9 +4,9 @@ import delay from "delay"
 import { createStdin } from "./create-stdin.js"
 import { setImmediate } from "node:timers/promises"
 
-export async function waitNextRender() {
+export async function waitNextRender(time = 10) {
   await setImmediate()
-  await delay(10)
+  await delay(time)
 }
 
 export const spawnOpenCoder = async (node: React.ReactElement, options?: { columns?: number }) => {

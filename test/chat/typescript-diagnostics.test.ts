@@ -7,6 +7,8 @@ import { convertArrayToReadableStream } from "ai/test"
 import { env } from "../../src/lib/env.js"
 import { waitNextRender } from "../utils/render.js"
 import { setupTestEnvironment } from "./util.js"
+import { setTimeout } from "node:timers/promises"
+import { registerDiagnosticsTool } from "../../src/tools/check-diagnostics.js"
 
 // Store original env.cwd
 const originalCwd = env.cwd
@@ -102,8 +104,8 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  env.cwd = originalCwd
-  global.__tsconfigPaths = undefined
+  // env.cwd = originalCwd
+  // global.__tsconfigPaths = undefined
   vi.clearAllMocks()
 })
 
@@ -117,13 +119,10 @@ afterAll(() => {
 })
 
 // temporary disable this, further investigation soon
-test.skip("check_diagnostics tool handles simple project with no errors", async () => {
+test("check-diagnostics tool handles simple project with no errors", async () => {
   // Set up environment for a simple project
   const projectDir = createTestProject("simple")
   env.cwd = projectDir
-
-  // Import the tool module
-  const { registerDiagnosticsTool } = await import("../../src/tools/check-diagnostics.js")
 
   // Create a mock model for testing
   const mockModel = new MockLanguageModelV1({})
@@ -134,7 +133,7 @@ test.skip("check_diagnostics tool handles simple project with no errors", async 
   const { instance, stdin, stdout } = await setupTestEnvironment({
     model: mockModel,
     customTools: {
-      check_diagnostics: await registerDiagnosticsTool(),
+      "check-diagnostics": await registerDiagnosticsTool(),
     },
   })
 
@@ -154,7 +153,7 @@ test.skip("check_diagnostics tool handles simple project with no errors", async 
       {
         type: "tool-call",
         toolCallId: "tool_diagnostics_1",
-        toolName: "check_diagnostics",
+        toolName: "check-diagnostics",
         args: JSON.stringify({}),
       },
       {
@@ -183,7 +182,7 @@ test.skip("check_diagnostics tool handles simple project with no errors", async 
   await vi.waitFor(
     () => {
       const output = stdout.get()
-      expect(output).toContain("Custom tool: check_diagnostics")
+      expect(output).toContain("Custom tool: check-diagnostics")
       expect(output).toContain("Your TypeScript code looks good! No errors found.")
     },
     { timeout: 2000 },
@@ -195,7 +194,8 @@ test.skip("check_diagnostics tool handles simple project with no errors", async 
   instance.unmount()
 })
 
-test("check_diagnostics tool handles project with errors", async () => {
+// TODO: this should throw error in tools
+test("'check-diagnostics' tool handles project with errors", async () => {
   // Set up environment for a project with errors
   const projectDir = createTestProject("withErrors")
   env.cwd = projectDir
@@ -212,7 +212,7 @@ test("check_diagnostics tool handles project with errors", async () => {
   const { instance, stdin, stdout } = await setupTestEnvironment({
     model: mockModel,
     customTools: {
-      check_diagnostics: await registerDiagnosticsTool(),
+      "check-diagnostics": await registerDiagnosticsTool(),
     },
   })
 
@@ -232,7 +232,7 @@ test("check_diagnostics tool handles project with errors", async () => {
       {
         type: "tool-call",
         toolCallId: "tool_diagnostics_1",
-        toolName: "check_diagnostics",
+        toolName: "check-diagnostics",
         args: JSON.stringify({}),
       },
       {
@@ -261,7 +261,7 @@ test("check_diagnostics tool handles project with errors", async () => {
   await vi.waitFor(
     () => {
       const output = stdout.get()
-      expect(output).toContain("Custom tool: check_diagnostics")
+      expect(output).toContain("Custom tool: check-diagnostics")
       expect(output).toContain("I found some TypeScript errors in your code.")
     },
     { timeout: 2000 },
@@ -273,7 +273,7 @@ test("check_diagnostics tool handles project with errors", async () => {
   instance.unmount()
 })
 
-test("check_diagnostics tool handles project with config error", async () => {
+test("'check-diagnostics' tool handles project with config error", async () => {
   // Set up environment for a project with config error
   const projectDir = createTestProject("withConfigError")
   env.cwd = projectDir
@@ -290,7 +290,7 @@ test("check_diagnostics tool handles project with config error", async () => {
   const { instance, stdin, stdout } = await setupTestEnvironment({
     model: mockModel,
     customTools: {
-      check_diagnostics: await registerDiagnosticsTool(),
+      "check-diagnostics": await registerDiagnosticsTool(),
     },
   })
 
@@ -310,7 +310,7 @@ test("check_diagnostics tool handles project with config error", async () => {
       {
         type: "tool-call",
         toolCallId: "tool_diagnostics_1",
-        toolName: "check_diagnostics",
+        toolName: "check-diagnostics",
         args: JSON.stringify({}),
       },
       {
@@ -342,7 +342,7 @@ test("check_diagnostics tool handles project with config error", async () => {
   await vi.waitFor(
     () => {
       const output = stdout.get()
-      expect(output).toContain("Custom tool: check_diagnostics")
+      expect(output).toContain("Custom tool: check-diagnostics")
       expect(output).toContain("There seems to be an issue with your TypeScript configuration.")
     },
     { timeout: 2000 },
@@ -354,7 +354,7 @@ test("check_diagnostics tool handles project with config error", async () => {
   instance.unmount()
 })
 
-test("check_diagnostics tool handles project with incremental error", async () => {
+test("'check-diagnostics' tool handles project with incremental error", async () => {
   // Set up environment for a project with incremental error
   const projectDir = createTestProject("withIncrementalError")
   env.cwd = projectDir
@@ -371,7 +371,7 @@ test("check_diagnostics tool handles project with incremental error", async () =
   const { instance, stdin, stdout } = await setupTestEnvironment({
     model: mockModel,
     customTools: {
-      check_diagnostics: await registerDiagnosticsTool(),
+      "check-diagnostics": await registerDiagnosticsTool(),
     },
   })
 
@@ -391,7 +391,7 @@ test("check_diagnostics tool handles project with incremental error", async () =
       {
         type: "tool-call",
         toolCallId: "tool_diagnostics_1",
-        toolName: "check_diagnostics",
+        toolName: "check-diagnostics",
         args: JSON.stringify({}),
       },
       {
@@ -424,7 +424,7 @@ test("check_diagnostics tool handles project with incremental error", async () =
   await vi.waitFor(
     () => {
       const output = stdout.get()
-      expect(output).toContain("Custom tool: check_diagnostics")
+      expect(output).toContain("Custom tool: check-diagnostics")
       expect(output).toContain(
         "There is a configuration issue with the incremental option in your tsconfig.json.",
       )
@@ -438,7 +438,7 @@ test("check_diagnostics tool handles project with incremental error", async () =
   instance.unmount()
 })
 
-test("check_diagnostics tool handles specific file paths", async () => {
+test("'check-diagnostics' tool handles specific file paths", async () => {
   // Set up environment for a project with errors
   const projectDir = createTestProject("withErrors")
   env.cwd = projectDir
@@ -455,7 +455,7 @@ test("check_diagnostics tool handles specific file paths", async () => {
   const { instance, stdin, stdout } = await setupTestEnvironment({
     model: mockModel,
     customTools: {
-      check_diagnostics: await registerDiagnosticsTool(),
+      "check-diagnostics": await registerDiagnosticsTool(),
     },
   })
 
@@ -475,7 +475,7 @@ test("check_diagnostics tool handles specific file paths", async () => {
       {
         type: "tool-call",
         toolCallId: "tool_diagnostics_1",
-        toolName: "check_diagnostics",
+        toolName: "check-diagnostics",
         args: JSON.stringify({ filePaths: ["src/index.ts"] }),
       },
       {
@@ -507,7 +507,7 @@ test("check_diagnostics tool handles specific file paths", async () => {
   await vi.waitFor(
     () => {
       const output = stdout.get()
-      expect(output).toContain("Custom tool: check_diagnostics")
+      expect(output).toContain("Custom tool: check-diagnostics")
       expect(output).toContain(
         "I found some TypeScript errors in the specific file you asked me to check.",
       )

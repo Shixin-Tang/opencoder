@@ -11,6 +11,10 @@
     "./mcp": {
       "import": "./dist/mcp.js",
       "types": "./dist/src/mcp.d.ts"
+    },
+    "./core": {
+      "import": "./dist/core.js",
+      "types": "./dist/src/core.d.ts"
     }
   },
   "module": "index.ts",
@@ -43,7 +47,7 @@
     "@typescript/vfs": "1.6.1",
     "@vscode/ripgrep": "1.15.11",
     "@vscode/tree-sitter-wasm": "0.1.4",
-    "ai": "^4.3.6",
+    "ai": "^4.3.9",
     "cli-boxes": "^4.0.1"
   },
   "devDependencies": {
@@ -103,6 +107,7 @@
     "react": "19.1",
     "react-devtools-core": "^6.1.1",
     "react-reconciler": "0.0.0-experimental-63779030-20250328",
+    "rolldown-plugin-dts": "^0.8.3",
     "rolldown-vite": "https://pkg.pr.new/rolldown/vite/vite@07af24adcc541d9254f1504749e4cc4910c0dc8c",
     "semver": "^7.7.1",
     "source-map-support": "^0.5.21",

@@ -18,6 +18,7 @@ import "source-map-support/register"
 import React from "react"
 import { tools } from "./tools/tools.js"
 import { setTimeout } from "node:timers/promises"
+import { createCoder } from "@/core.js"
 
 dotenv.config()
 
@@ -73,26 +74,4 @@ Working directory: ${chalk.green(env.cwd)}`,
   )
 }
 
-const store = createStore()
-const app = render(
-  <Provider store={store}>
-    <QueryClientProvider client={queryClient}>
-      <AppProvider
-        {...config}
-        mcp={await Promise.all(config.mcp || [])}
-        customTools={config.customTools || {}}
-        autoRunCommand={command}
-      >
-        <App />
-      </AppProvider>
-    </QueryClientProvider>
-  </Provider>,
-  { exitOnCtrlC: false },
-)
-
-declare global {
-  // eslint-disable-next-line vars-on-top, no-var
-  var app: Instance
-}
-
-globalThis.app = app
+createCoder(config, command)
