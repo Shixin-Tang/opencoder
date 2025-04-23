@@ -55,6 +55,9 @@ export type Config = {
     autoAcceptBashCommands?: string[] | true
   }
   experimental?: {
+    // custom prompt for tools
+    toolPrompt?: Record<string, string>
+
     // for custom models in Agent tool or switch-model tool
     modelRegistry?: Record<
       string,

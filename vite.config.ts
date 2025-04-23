@@ -46,6 +46,7 @@ export default defineConfig({
         "@lancedb/lancedb",
         "unconfig",
         "cli-boxes",
+        "linkedom",
         /node:/,
         ...require("repl")._builtinLibs,
       ],

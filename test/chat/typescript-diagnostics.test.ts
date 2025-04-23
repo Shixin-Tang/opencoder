@@ -1,4 +1,4 @@
-import { vi, test, expect, beforeEach, afterEach, afterAll } from "vitest"
+import { vi, test, expect, beforeEach, afterEach, afterAll, beforeAll } from "vitest"
 import path from "node:path"
 import { mkdirSync, writeFileSync, rmSync } from "node:fs"
 import os from "node:os"
@@ -8,10 +8,10 @@ import { env } from "../../src/lib/env.js"
 import { waitNextRender } from "../utils/render.js"
 import { setupTestEnvironment } from "./util.js"
 import { setTimeout } from "node:timers/promises"
+// Import once at the top level to ensure consistent module loading
 import { registerDiagnosticsTool } from "../../src/tools/check-diagnostics.js"
 
-// Store original env.cwd
-const originalCwd = env.cwd
+// We'll use env.cwd to set the current working directory for each test
 
 // Create a temporary directory for our test projects
 const testDir = path.join(os.tmpdir(), `typescript-diagnostics-test-${Date.now()}`)
@@ -91,6 +91,26 @@ const createTestProject = (projectType: string) => {
   }
 }
 
+// Initialize TypeScript before any tests run
+beforeAll(async () => {
+  // Ensure the test directory exists
+  try {
+    mkdirSync(testDir, { recursive: true })
+  } catch (error) {
+    // Directory might already exist
+  }
+
+  // Pre-initialize TypeScript to avoid race conditions
+  const simpleProjectDir = createTestProject("simple")
+  env.cwd = simpleProjectDir
+
+  // Register the tool once to ensure TypeScript is loaded
+  await registerDiagnosticsTool()
+
+  // Wait a bit to ensure TypeScript is fully loaded
+  await setTimeout(500)
+})
+
 beforeEach(() => {
   vi.resetModules()
   global.__tsconfigPaths = undefined
@@ -118,8 +138,9 @@ afterAll(() => {
   }
 })
 
-// temporary disable this, further investigation soon
 test("check-diagnostics tool handles simple project with no errors", async () => {
+  // Add a small delay to ensure TypeScript is fully loaded
+  await setTimeout(100)
   // Set up environment for a simple project
   const projectDir = createTestProject("simple")
   env.cwd = projectDir
@@ -185,7 +206,7 @@ test("check-diagnostics tool handles simple project with no errors", async () =>
       expect(output).toContain("Custom tool: check-diagnostics")
       expect(output).toContain("Your TypeScript code looks good! No errors found.")
     },
-    { timeout: 2000 },
+    { timeout: 5000, interval: 100 },
   )
 
   // Verify final state
@@ -194,14 +215,14 @@ test("check-diagnostics tool handles simple project with no errors", async () =>
   instance.unmount()
 })
 
-// TODO: this should throw error in tools
 test("'check-diagnostics' tool handles project with errors", async () => {
+  // Add a small delay to ensure TypeScript is fully loaded
+  await setTimeout(100)
   // Set up environment for a project with errors
   const projectDir = createTestProject("withErrors")
   env.cwd = projectDir
 
-  // Import the tool module
-  const { registerDiagnosticsTool } = await import("../../src/tools/check-diagnostics.js")
+  // Use the already imported tool module
 
   // Create a mock model for testing
   const mockModel = new MockLanguageModelV1({})
@@ -264,7 +285,7 @@ test("'check-diagnostics' tool handles project with errors", async () => {
       expect(output).toContain("Custom tool: check-diagnostics")
       expect(output).toContain("I found some TypeScript errors in your code.")
     },
-    { timeout: 2000 },
+    { timeout: 5000, interval: 100 },
   )
 
   // Verify final state
@@ -274,12 +295,13 @@ test("'check-diagnostics' tool handles project with errors", async () => {
 })
 
 test("'check-diagnostics' tool handles project with config error", async () => {
+  // Add a small delay to ensure TypeScript is fully loaded
+  await setTimeout(100)
   // Set up environment for a project with config error
   const projectDir = createTestProject("withConfigError")
   env.cwd = projectDir
 
-  // Import the tool module
-  const { registerDiagnosticsTool } = await import("../../src/tools/check-diagnostics.js")
+  // Use the already imported tool module
 
   // Create a mock model for testing
   const mockModel = new MockLanguageModelV1({})
@@ -345,7 +367,7 @@ test("'check-diagnostics' tool handles project with config error", async () => {
       expect(output).toContain("Custom tool: check-diagnostics")
       expect(output).toContain("There seems to be an issue with your TypeScript configuration.")
     },
-    { timeout: 2000 },
+    { timeout: 5000, interval: 100 },
   )
 
   // Verify final state
@@ -355,12 +377,13 @@ test("'check-diagnostics' tool handles project with config error", async () => {
 })
 
 test("'check-diagnostics' tool handles project with incremental error", async () => {
+  // Add a small delay to ensure TypeScript is fully loaded
+  await setTimeout(100)
   // Set up environment for a project with incremental error
   const projectDir = createTestProject("withIncrementalError")
   env.cwd = projectDir
 
-  // Import the tool module
-  const { registerDiagnosticsTool } = await import("../../src/tools/check-diagnostics.js")
+  // Use the already imported tool module
 
   // Create a mock model for testing
   const mockModel = new MockLanguageModelV1({})
@@ -429,7 +452,7 @@ test("'check-diagnostics' tool handles project with incremental error", async ()
         "There is a configuration issue with the incremental option in your tsconfig.json.",
       )
     },
-    { timeout: 2000 },
+    { timeout: 5000, interval: 100 },
   )
 
   // Verify final state
@@ -439,12 +462,13 @@ test("'check-diagnostics' tool handles project with incremental error", async ()
 })
 
 test("'check-diagnostics' tool handles specific file paths", async () => {
+  // Add a small delay to ensure TypeScript is fully loaded
+  await setTimeout(100)
   // Set up environment for a project with errors
   const projectDir = createTestProject("withErrors")
   env.cwd = projectDir
 
-  // Import the tool module
-  const { registerDiagnosticsTool } = await import("../../src/tools/check-diagnostics.js")
+  // Use the already imported tool module
 
   // Create a mock model for testing
   const mockModel = new MockLanguageModelV1({})
@@ -512,7 +536,7 @@ test("'check-diagnostics' tool handles specific file paths", async () => {
         "I found some TypeScript errors in the specific file you asked me to check.",
       )
     },
-    { timeout: 2000 },
+    { timeout: 5000, interval: 100 },
   )
 
   // Verify final state
